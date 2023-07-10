@@ -3,10 +3,13 @@ import pandas as pd
 import common
 import matplotlib.pyplot as plt
 import numpy as np
+import os
 
 
-class Service:
+class Service(object):
     data = []
+    m=50
+    step=1
     before = ["01", "02", "03", "04", "05", "06", "07", "08", "09", "10", "11", "12", "13", "14", "15", "16", "17",
               "18", "19", "20", "21", "22", "23", "24", "25", "26", "27", "28", "29", "30", "31", "32", "33", "34",
               "35"]
@@ -16,8 +19,15 @@ class Service:
     def __init__(self):
         self.data = common.read_json("./data/data.json")
 
-    # 生成单号码概率曲线
-    def get_single_data(self, m: int, step: int, ignore: int = 0):
+    def init(self, m: int, step: int):
+        self.m = m
+        self.step = step
+
+    # 生成概率基础数据
+    def get_single_data(self, ignore: int = 0):
+
+        m = self.m
+        step = self.step
 
         data = self.data[:len(self.data) - ignore]
         data_count = len(data)
@@ -61,8 +71,11 @@ class Service:
         return all_before_average, all_after_average, single_data_before, single_data_after, date_stage, date_index
 
     # 获取数量
-    @staticmethod
-    def _single_data():
+    def _single_data(self):
+
+        m = self.m
+        step = self.step
+
         all_before_average = common.read_json("./data/"+str(m)+"_"+str(step)+"/single_all_before_average.json")
         all_after_average = common.read_json("./data/"+str(m)+"_"+str(step)+"/single_all_after_average.json")
         single_data_before = common.read_json("./data/"+str(m)+"_"+str(step)+"/single_data_before.json")
@@ -87,24 +100,29 @@ class Service:
                 single_data_after[date_item] += 1
         return single_data_before, single_data_after
 
-    # 绘曲线
-    def draw_single_list(self, m: int, step: int, n: int, dot_count: int = 200):
+    # 绘制单号曲线
+    def draw_single_lines(self, n: int, dot_count: int = 200):
+        m = self.m
+        step = self.step
         all_before_average, all_after_average, single_data_before, single_data_after, date_stage, date_index = self._single_data()
         common.save_file("./images/"+str(m)+"_"+str(step)+"/single/last_stage", date_stage[-1])
 
         print("single_before")
+        before_speed_data = []
+        after_speed_data = []
         for i in range(len(self.before)):
             item_ema = common.ema(single_data_before[i], n)
-            data_speed = pd.DataFrame(item_ema).pct_change(periods=1, fill_method="pad")
+            data_speed = pd.DataFrame(item_ema).pct_change(periods=1, fill_method="pad").stack()
+            before_speed_data.append(data_speed.to_numpy().tolist())
 
             all_before_average_item = all_before_average[i]
-            all_before_average_item_line = []
+            average_line = []
             for i0 in range(len(date_stage)):
-                all_before_average_item_line.append(all_before_average_item)
+                average_line.append(all_before_average_item)
 
-            fig, (ax1, ax2) = plt.subplots(2, 1, figsize=((dot_count/80) * 16, 16))
+            fig, (ax1, ax2) = plt.subplots(2, 1, figsize=((dot_count/80) * 10, 13))
             ax1.scatter(range(len(single_data_before[i][-dot_count:])), single_data_before[i][-dot_count:], c="#cccccc", linewidths=1)
-            ax1.plot(all_before_average_item_line[-dot_count:], linestyle="-", color="#F52D2D", linewidth=2)
+            ax1.plot(average_line[-dot_count:], linestyle="-", color="#F52D2D", linewidth=2)
             ax1.plot(item_ema[-dot_count:], linestyle="-", color="#ababab", linewidth=2)
 
             ax2.plot(np.array(data_speed[-dot_count:]), linestyle="-", color="#F52D2D", linewidth=2)
@@ -120,16 +138,17 @@ class Service:
         print("single_after")
         for i in range(len(self.after)):
             item_ema = common.ema(single_data_after[i], n)
-            data_speed = pd.DataFrame(item_ema).pct_change(periods=1, fill_method="pad")
+            data_speed = pd.DataFrame(item_ema).pct_change(periods=1, fill_method="pad").stack()
+            after_speed_data.append(data_speed.to_numpy().tolist())
 
             all_after_average_item = all_after_average[i]
-            all_after_average_item_line = []
+            average_line = []
             for i0 in range(len(date_stage)):
-                all_after_average_item_line.append(all_after_average_item)
+                average_line.append(all_after_average_item)
 
-            fig, (ax1, ax2) = plt.subplots(2, 1, figsize=((dot_count/80) * 16, 16))
+            fig, (ax1, ax2) = plt.subplots(2, 1, figsize=((dot_count/80) * 10, 13))
             ax1.scatter(range(len(single_data_after[i][-dot_count:])), single_data_after[i][-dot_count:], c="#cccccc", linewidths=1)
-            ax1.plot(all_after_average_item_line[-dot_count:], linestyle="-", color="#F52D2D", linewidth=2)
+            ax1.plot(average_line[-dot_count:], linestyle="-", color="#F52D2D", linewidth=2)
             ax1.plot(item_ema[-dot_count:], linestyle="-", color="#ababab", linewidth=2)
 
             ax2.plot(np.array(data_speed[-dot_count:]), linestyle="-", color="#F52D2D", linewidth=2)
@@ -142,9 +161,179 @@ class Service:
             plt.clf()
             plt.close("all")
 
-    def draw_parity_list(self, m: int, step: int, n: int, dot_count: int = 200):
+        # 存储均值速率数据
+        common.save_file("./data/"+str(m)+"_"+str(step)+"/single/single_speed_data.json", json.dumps(before_speed_data))
+        common.save_file("./data/"+str(m)+"_"+str(step)+"/single/single_speed_data.json", json.dumps(after_speed_data))
+
+    # 绘制奇偶曲线
+    def draw_parity_lines(self, n: int, dot_count: int = 200):
+        m = self.m
+        step = self.step
         all_before_average, all_after_average, single_data_before, single_data_after, date_stage, date_index = self._single_data()
-        common.save_file("./images/"+str(m)+"_"+str(step)+"/single/last_stage", date_stage[-1])
+        common.save_file("./images/"+str(m)+"_"+str(step)+"/parity/last_stage", date_stage[-1])
+
+        before_lines_data = {"1": np.zeros((len(date_stage),), dtype=float).tolist(), "2": np.zeros((len(date_stage),), dtype=float).tolist()}
+        after_lines_data = {"1": np.zeros((len(date_stage),), dtype=float).tolist(), "2": np.zeros((len(date_stage),), dtype=float).tolist()}
 
         for i in range(len(self.before)):
-            common.parity(self.before)
+            parity = common.parity(self.before[i])
+            for i0 in range(len(date_stage)):
+                before_lines_data[str(parity)][i0] += single_data_before[i][i0]
+
+        for i in range(len(self.after)):
+            parity = common.parity(self.after[i])
+            for i0 in range(len(date_stage)):
+                after_lines_data[str(parity)][i0] += single_data_after[i][i0]
+
+        before_lines_average = {"1": np.average(np.array(before_lines_data["1"])), "2": np.average(np.array(before_lines_data["2"]))}
+        after_lines_average = {"1": np.average(np.array(after_lines_data["1"])), "2": np.average(np.array(after_lines_data["2"]))}
+
+        before_speed_data = []
+        after_speed_data = []
+        for i in ["1", "2"]:
+            average_line = []
+            for i0 in range(len(date_stage)):
+                average_line.append(before_lines_average[i])
+
+            item_ema = common.ema(before_lines_data[i], n)
+            data_speed = pd.DataFrame(item_ema).pct_change(periods=1, fill_method="pad").stack()
+            before_speed_data.append(data_speed)
+
+            fig, (ax1, ax2) = plt.subplots(2, 1, figsize=((dot_count / 80) * 10, 13))
+            ax1.scatter(range(len(before_lines_data[i][-dot_count:])), before_lines_data[i][-dot_count:],
+                        c="#cccccc", linewidths=1)
+            ax1.plot(average_line[-dot_count:], linestyle="-", color="#F52D2D", linewidth=2)
+            ax1.plot(item_ema[-dot_count:], linestyle="-", color="#ababab", linewidth=2)
+
+            ax2.plot(np.array(data_speed[-dot_count:]), linestyle="-", color="#F52D2D", linewidth=2)
+            ax2.plot((np.zeros((len(data_speed[-dot_count:]),), dtype=int)), linestyle="-", color="#000000",
+                     linewidth=2)
+
+            plt.xlabel("parity_before:" + i)
+            plt.savefig("./images/" + str(m) + "_" + str(step) + "/parity/before_" + i + ".jpg",
+                        format="jpg", bbox_inches="tight", pad_inches=0,
+                        transparent=True, dpi=64)
+            plt.axis("off")
+            plt.clf()
+            plt.close("all")
+
+            average_line = []
+            for i0 in range(len(date_stage)):
+                average_line.append(after_lines_average[i])
+
+            item_ema = common.ema(after_lines_data[i], n)
+            data_speed = pd.DataFrame(item_ema).pct_change(periods=1, fill_method="pad").stack()
+            after_speed_data.append(data_speed)
+
+            fig, (ax1, ax2) = plt.subplots(2, 1, figsize=((dot_count / 80) * 10, 13))
+            ax1.scatter(range(len(after_lines_data[i][-dot_count:])), after_lines_data[i][-dot_count:],
+                        c="#cccccc", linewidths=1)
+            ax1.plot(average_line[-dot_count:], linestyle="-", color="#F52D2D", linewidth=2)
+            ax1.plot(item_ema[-dot_count:], linestyle="-", color="#ababab", linewidth=2)
+
+            ax2.plot(np.array(data_speed[-dot_count:]), linestyle="-", color="#F52D2D", linewidth=2)
+            ax2.plot((np.zeros((len(data_speed[-dot_count:]),), dtype=int)), linestyle="-", color="#000000",
+                     linewidth=2)
+
+            plt.xlabel("parity_after:" + i)
+            plt.savefig("./images/" + str(m) + "_" + str(step) + "/parity/after_" + i + ".jpg",
+                        format="jpg", bbox_inches="tight", pad_inches=0,
+                        transparent=True, dpi=64)
+            plt.axis("off")
+            plt.clf()
+            plt.close("all")
+
+        # 存储数据
+        common.save_file("./data/"+str(m)+"_"+str(step)+"/parity/before_lines_data.json", json.dumps(np.array(before_lines_data).tolist()))
+        common.save_file("./data/"+str(m)+"_"+str(step)+"/parity/after_lines_data.json", json.dumps(np.array(after_lines_data).tolist()))
+        common.save_file("./data/"+str(m)+"_"+str(step)+"/parity/before_speed_data.json", json.dumps(np.array(before_speed_data).tolist()))
+        common.save_file("./data/"+str(m)+"_"+str(step)+"/parity/after_speed_data.json", json.dumps(np.array(after_speed_data).tolist()))
+
+    # 绘制分块曲线
+    def draw_piece_lines(self, b_n: int, a_n: int, n: int, dot_count: int = 200):
+        m = self.m
+        step = self.step
+        all_before_average, all_after_average, single_data_before, single_data_after, date_stage, date_index = self._single_data()
+
+        before_pieces_data = []
+        after_pieces_data = []
+        before_pieces = []
+        after_pieces = []
+        for i in range(len(self.before)):
+            piece_index = int(i/b_n)
+            if len(before_pieces_data) <= piece_index:
+                before_pieces_data.append(single_data_before[i])
+                before_pieces.append([i])
+            else:
+                before_pieces_data[piece_index] = (np.array(before_pieces_data[piece_index]) + np.array(single_data_before[i])).tolist()
+                before_pieces[piece_index].append(i)
+
+        for i in range(len(self.after)):
+            piece_index = int(i/a_n)
+            if len(after_pieces_data) <= piece_index:
+                after_pieces_data.append(single_data_before[i])
+                after_pieces.append([i])
+            else:
+                after_pieces_data[piece_index] = (np.array(after_pieces_data[piece_index]) + np.array(single_data_after[i])).tolist()
+                after_pieces[piece_index].append(i)
+
+        common.save_file("./images/"+str(m)+"_"+str(step)+"/piece/before_pieces", json.dumps(before_pieces))
+        common.save_file("./images/"+str(m)+"_"+str(step)+"/piece/after_pieces", json.dumps(after_pieces))
+
+        before_speed_data = []
+        after_speed_data = []
+        for i in range(len(before_pieces_data)):
+            average_line = []
+            before_lines_average = np.average(np.array(before_pieces_data[i]))
+            for i0 in range(len(date_stage)):
+                average_line.append(before_lines_average)
+
+            item_ema = common.ema(before_pieces_data[i], n)
+            data_speed = pd.DataFrame(item_ema).pct_change(periods=1, fill_method="pad").stack()
+            before_speed_data.append(data_speed)
+
+            fig, (ax1, ax2) = plt.subplots(2, 1, figsize=((dot_count / 80) * 10, 13))
+            ax1.scatter(range(len(before_pieces_data[i][-dot_count:])), before_pieces_data[i][-dot_count:],
+                        c="#cccccc", linewidths=1)
+            ax1.plot(average_line[-dot_count:], linestyle="-", color="#F52D2D", linewidth=2)
+            ax1.plot(item_ema[-dot_count:], linestyle="-", color="#ababab", linewidth=2)
+
+            ax2.plot(np.array(data_speed[-dot_count:]), linestyle="-", color="#F52D2D", linewidth=2)
+            ax2.plot((np.zeros((len(data_speed[-dot_count:]),), dtype=int)), linestyle="-", color="#000000",
+                     linewidth=2)
+
+            plt.xlabel("piece_before:" + str(i))
+            plt.savefig("./images/" + str(m) + "_" + str(step) + "/piece/before_" + str(i) + ".jpg",
+                        format="jpg", bbox_inches="tight", pad_inches=0,
+                        transparent=True, dpi=64)
+            plt.axis("off")
+            plt.clf()
+            plt.close("all")
+
+        for i in range(len(after_pieces_data)):
+            average_line = []
+            after_lines_average = np.average(np.array(after_pieces_data[i]))
+            for i0 in range(len(date_stage)):
+                average_line.append(after_lines_average)
+
+            item_ema = common.ema(after_pieces_data[i], n)
+            data_speed = pd.DataFrame(item_ema).pct_change(periods=1, fill_method="pad").stack()
+            after_speed_data.append(data_speed)
+
+            fig, (ax1, ax2) = plt.subplots(2, 1, figsize=((dot_count / 80) * 10, 13))
+            ax1.scatter(range(len(after_pieces_data[i][-dot_count:])), after_pieces_data[i][-dot_count:],
+                        c="#cccccc", linewidths=1)
+            ax1.plot(average_line[-dot_count:], linestyle="-", color="#F52D2D", linewidth=2)
+            ax1.plot(item_ema[-dot_count:], linestyle="-", color="#ababab", linewidth=2)
+
+            ax2.plot(np.array(data_speed[-dot_count:]), linestyle="-", color="#F52D2D", linewidth=2)
+            ax2.plot((np.zeros((len(data_speed[-dot_count:]),), dtype=int)), linestyle="-", color="#000000",
+                     linewidth=2)
+
+            plt.xlabel("piece_after:" + str(i))
+            plt.savefig("./images/" + str(m) + "_" + str(step) + "/piece/after_" + str(i) + ".jpg",
+                        format="jpg", bbox_inches="tight", pad_inches=0,
+                        transparent=True, dpi=64)
+            plt.axis("off")
+            plt.clf()
+            plt.close("all")
