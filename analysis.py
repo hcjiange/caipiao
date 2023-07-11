@@ -7,62 +7,171 @@ import service
 import matplotlib.pyplot as plt
 import seaborn as sns
 
+# 随机森林
+# 导入所需要的包
+import pickle
+from sklearn.metrics import precision_score
+from sklearn.model_selection import train_test_split
+from sklearn.svm import SVC
+from sklearn.linear_model import LogisticRegression
+from sklearn.ensemble import RandomForestClassifier
+from matplotlib.colors import ListedColormap
+from sklearn.preprocessing import LabelEncoder
+# 评估报告
+from sklearn.metrics import classification_report
+from sklearn.metrics import accuracy_score, precision_score, recall_score, f1_score, cohen_kappa_score
+# 交叉验证
+from sklearn.model_selection import cross_val_score
+# 网格搜索
+from sklearn.model_selection import GridSearchCV
+# 归一化，标准化
+from sklearn.preprocessing import StandardScaler, MinMaxScaler, MaxAbsScaler
 
-def get_data(m: int, step: int, n: int, draw: bool, dot_count: int):
+# 忽略警告
+import warnings
 
-    s = service.Service()
-
-    s.init(m=m, step=step, n=n, draw=draw, dot_count=dot_count)
-
-    # 获取基础数据
-    all_before_average, all_after_average, single_data_before, single_data_after, date_stage, date_index = s.get_base_data()
-    before_speed_data, after_speed_data = s.get_single_data()
-    before_parity_data, after_parity_data, before_parity_speed_data, after_parity_speed_data = s.get_parity_data()
-    before_pieces_data, after_pieces_data, before_pieces_speed_data, after_pieces_speed_data = s.get_piece_data(b_n=7, a_n=4)
-
-    single_data_before = pd.DataFrame(single_data_before).T - all_before_average
-    single_data_after = pd.DataFrame(single_data_after).T - all_after_average
-
-    before_data = pd.DataFrame(s.data).loc[:, "lotteryDrawResult"].apply(lambda x: pd.Series(str(x).split(" ")[:-2]).astype('int').to_numpy().tolist())
-    after_data = pd.DataFrame(s.data).loc[:, "lotteryDrawResult"].apply(lambda x: pd.Series(str(x).split(" ")[-2:]).astype('int').to_numpy().tolist())
-
-    single_data_before_result = pd.DataFrame(single_data_before.T.to_numpy().tolist())
-
-    # print(before_data[0])
-    # exit()
-    for i in range(len(date_index) - 1):
-        next_i = i + 1
-        for i0 in range(len(single_data_before_result[i])):
-            single_data_before_result[i][i0] = 1 if i0+1 in np.array(before_data[next_i]).tolist() else 0
+warnings.filterwarnings("ignore")
 
 
-    # print(single_data_before[2])
-    # exit()
-    print(single_data_before_result.T[-20:])
-    model = RandomForestClassifier()
-    model.fit(single_data_before, preprocessing.LabelEncoder().fit_transform(single_data_before_result.T[1]))
-    res = model.predict(single_data_before[-20:])
-    print(res)
-    # sns_data_before = single_data_before.assign(Y=single_data_before_result.T[0])
-    # print(sns_data_before)
-    # exit()
-    # plt.figure(figsize=(20, 20))
-    # plt.rcParams['font.sans-serif'] = ['SimHei']
-    # plt.rcParams['axes.unicode_minus'] = False
-    # sns.heatmap(sns_data_before.corr(), cmap="YlGnBu", annot=False)
-    # plt.title("相关性分析图")
-    # plt.show()
+class Analysis(object):
 
-if __name__ == '__main__':
+    def do(self):
 
-    # m, step, n, draw, dot_count = 50, 3, 15, False, 200
-    # get_data(m=m, step=step, n=n, draw=draw, dot_count=dot_count)
-    #
-    # m, step, n, draw, dot_count = 50, 1, 15, False, 200
-    # get_data(m=m, step=step, n=n, draw=draw, dot_count=dot_count)
-    #
-    m, step, n, draw, dot_count = 30, 1, 15, False, 200
-    get_data(m=m, step=step, n=n, draw=draw, dot_count=dot_count)
-    #
-    # m, step, n, draw, dot_count = 10, 1, 15, False, 200
-    # get_data(m=m, step=step, n=n, draw=draw, dot_count=dot_count)
+        m, step, n, draw, dot_count = 30, 1, 15, False, 200
+        b_single_data, a_single_data, date_index = self.get_data(m=m, step=step, n=n, draw=draw, dot_count=dot_count)
+
+        org_data = common.read_json("./data/data.json")
+        b_data = pd.DataFrame(org_data).loc[:, "lotteryDrawResult"].apply(
+            lambda x: pd.Series(str(x).split(" ")[:-2]).astype('int').to_numpy().tolist())
+        a_data = pd.DataFrame(org_data).loc[:, "lotteryDrawResult"].apply(
+            lambda x: pd.Series(str(x).split(" ")[-2:]).astype('int').to_numpy().tolist())
+
+        # 复制一个同大小阵列
+        b_y = pd.DataFrame(b_single_data.to_numpy().tolist()).T
+        b_y_include_num = 2
+        for i in range(len(date_index) - b_y_include_num):
+            for i0 in range(len(b_y[i])):
+                if i0 + 1 in np.array(b_data[date_index[i] + 1]).tolist() or i0 + 1 in np.array(
+                        b_data[date_index[i] + 2]).tolist():
+                    b_y[i][i0] = 1
+                else:
+                    b_y[i][i0] = 0
+
+        # 复制一个同大小阵列
+        a_y = pd.DataFrame(a_single_data.to_numpy().tolist()).T
+        a_y_include_num = 2
+        for i in range(len(date_index) - a_y_include_num):
+            for i0 in range(len(a_y[i])):
+                if i0 + 1 in np.array(a_data[date_index[i] + 1]).tolist() or i0 + 1 in np.array(
+                        a_data[date_index[i] + 2]).tolist():
+                    a_y[i][i0] = 1
+                else:
+                    a_y[i][i0] = 0
+
+        b_y.T.to_csv("./data/b_y.csv")
+        a_y.T.to_csv("./data/a_y.csv")
+
+        b_x = b_single_data
+        a_x = a_single_data
+        # i = 2
+        # self.to_fit_model(b_x, b_y.T[i], "b", i + 1)
+        for i in range(35):
+            self.to_fit_model(b_x, b_y.T[i], "b", i + 1)
+
+    def to_fit_model(self, x, y, place: str, number: int):
+
+        x_train, x_test, y_train, y_test = train_test_split(x, y, random_state=90)
+
+        scorel = []
+        for i in range(1, 200, 10):
+            rfc = RandomForestClassifier(max_depth=8, n_estimators=i, n_jobs=-1, random_state=90)
+            rfc.fit(x_train, preprocessing.LabelEncoder().fit_transform(y_train))
+            score = rfc.score(x_test, y_test)
+            scorel.append(score)
+
+        n_estimators = ([*range(1, 200, 10)][scorel.index(max(scorel))])
+
+        scorel = []
+        for i in range(3, 30):
+            rfc = RandomForestClassifier(max_depth=i, n_estimators=n_estimators, n_jobs=-1, random_state=90)
+            rfc.fit(x_train, preprocessing.LabelEncoder().fit_transform(y_train))
+            score = rfc.score(x_test, y_test)
+            scorel.append(score)
+
+        max_depth = ([*range(3, 30)][scorel.index(max(scorel))])
+
+        scorel = []
+        for i in range(1, 20):
+            rfc = RandomForestClassifier(max_depth=max_depth, n_estimators=n_estimators, min_samples_leaf=i, n_jobs=-1, random_state=90)
+            rfc.fit(x_train, preprocessing.LabelEncoder().fit_transform(y_train))
+            score = rfc.score(x_test, y_test)
+            scorel.append(score)
+
+        min_samples_leaf = ([*range(1, 20)][scorel.index(max(scorel))])
+
+        model = RandomForestClassifier(max_depth=max_depth, n_estimators=n_estimators, min_samples_leaf=min_samples_leaf, min_samples_split=7,
+                                       max_features='sqrt', criterion='entropy')
+        # 训练模型
+        model.fit(x_train, preprocessing.LabelEncoder().fit_transform(y_train))
+        y_pred = model.predict(x_test)
+        '''
+        评估指标
+        '''
+        # 求出预测和真实一样的数目
+        true = np.sum(y_pred == y_test)
+        print('预测对的结果数目为：', true)
+        print('预测错的的结果数目为：', y_test.shape[0] - true)
+        # 评估指标
+        print('预测数据的准确率为： {:.4}%'.format(accuracy_score(y_test, y_pred) * 100))
+        print('预测数据的精确率为：{:.4}%'.format(
+            precision_score(y_test, y_pred, average='macro') * 100))
+        print('预测数据的召回率为：{:.4}%'.format(
+            recall_score(y_test, y_pred, average='macro') * 100))
+        # print("训练数据的F1值为：", f1score_train)
+        print('预测数据的F1值为：',
+              f1_score(y_test, y_pred, average='macro'))
+        print('预测数据的Cohen’s Kappa系数为：',
+              cohen_kappa_score(y_test, y_pred))
+        # 打印分类报告
+        print('预测数据的分类报告为：', '\n',
+              classification_report(y_test, y_pred))
+
+        with open("./data/model/" + place + "_" + str(number) + ".pkl", 'wb') as f:
+            pickle.dump(model, f)
+
+
+        return
+
+    def get_data(self, m: int, step: int, n: int, draw: bool, dot_count: int):
+
+        s = service.Service()
+
+        s.init(m=m, step=step, n=n, draw=draw, dot_count=dot_count)
+
+        # 获取基础数据
+        all_before_average, all_after_average, single_data_before, single_data_after, date_stage, date_index = s.get_base_data()
+        before_speed_data, after_speed_data = s.get_single_data()
+        before_parity_data, after_parity_data, before_parity_speed_data, after_parity_speed_data = s.get_parity_data()
+        before_pieces_data, after_pieces_data, before_pieces_speed_data, after_pieces_speed_data = s.get_piece_data(
+            b_n=7, a_n=4)
+
+        single_data_before = pd.DataFrame(single_data_before).T - all_before_average
+        single_data_after = pd.DataFrame(single_data_after).T - all_after_average
+
+        return single_data_before, single_data_after, date_index
+
+    def to_predit(self):
+
+        m, step, n, draw, dot_count = 30, 1, 15, False, 200
+        b_single_data, a_single_data, date_index = self.get_data(m=m, step=step, n=n, draw=draw, dot_count=dot_count)
+
+        b_x = b_single_data[::-1].T[1]
+        # print(b_x)
+        # exit()
+        a_x = a_single_data
+        for i in range(26):
+            with open("./data/model/b_" + str(i + 1) + ".pkl", 'rb') as f:
+                model = pickle.load(f)
+                res = model.predict([b_x])
+                print(str(i + 1), res)
+        return
