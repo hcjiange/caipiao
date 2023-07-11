@@ -68,12 +68,16 @@ class Service(object):
                     single_data_after[i0].append(single_data_after_item[self.after[i0]] / (m * 2))
 
         # 存储数据
-        common.save_file("./data/"+str(m)+"_"+str(step)+"/single_all_before_average.json", json.dumps(all_before_average))
-        common.save_file("./data/"+str(m)+"_"+str(step)+"/single_all_after_average.json", json.dumps(all_after_average))
-        common.save_file("./data/"+str(m)+"_"+str(step)+"/single_data_before.json", json.dumps(single_data_before))
-        common.save_file("./data/"+str(m)+"_"+str(step)+"/single_data_after.json", json.dumps(single_data_after))
-        common.save_file("./data/"+str(m)+"_"+str(step)+"/single_data_stage.json", json.dumps(date_stage))
-        common.save_file("./data/"+str(m)+"_"+str(step)+"/single_data_index.json", json.dumps(date_index))
+        common.save_file("./data/" + str(m) + "_" + str(step) + "/single_all_before_average.json",
+                         json.dumps(all_before_average))
+        common.save_file("./data/" + str(m) + "_" + str(step) + "/single_all_after_average.json",
+                         json.dumps(all_after_average))
+        common.save_file("./data/" + str(m) + "_" + str(step) + "/single_data_before.json",
+                         json.dumps(single_data_before))
+        common.save_file("./data/" + str(m) + "_" + str(step) + "/single_data_after.json",
+                         json.dumps(single_data_after))
+        common.save_file("./data/" + str(m) + "_" + str(step) + "/single_data_stage.json", json.dumps(date_stage))
+        common.save_file("./data/" + str(m) + "_" + str(step) + "/single_data_index.json", json.dumps(date_index))
         return all_before_average, all_after_average, single_data_before, single_data_after, date_stage, date_index
 
     # 获取数量
@@ -82,23 +86,23 @@ class Service(object):
         m = self.m
         step = self.step
 
-        all_before_average = common.read_json("./data/"+str(m)+"_"+str(step)+"/single_all_before_average.json")
-        all_after_average = common.read_json("./data/"+str(m)+"_"+str(step)+"/single_all_after_average.json")
-        single_data_before = common.read_json("./data/"+str(m)+"_"+str(step)+"/single_data_before.json")
-        single_data_after = common.read_json("./data/"+str(m)+"_"+str(step)+"/single_data_after.json")
-        date_stage = common.read_json("./data/"+str(m)+"_"+str(step)+"/single_data_stage.json")
-        date_index = common.read_json("./data/"+str(m)+"_"+str(step)+"/single_data_index.json")
+        all_before_average = common.read_json("./data/" + str(m) + "_" + str(step) + "/single_all_before_average.json")
+        all_after_average = common.read_json("./data/" + str(m) + "_" + str(step) + "/single_all_after_average.json")
+        single_data_before = common.read_json("./data/" + str(m) + "_" + str(step) + "/single_data_before.json")
+        single_data_after = common.read_json("./data/" + str(m) + "_" + str(step) + "/single_data_after.json")
+        date_stage = common.read_json("./data/" + str(m) + "_" + str(step) + "/single_data_stage.json")
+        date_index = common.read_json("./data/" + str(m) + "_" + str(step) + "/single_data_index.json")
         return all_before_average, all_after_average, single_data_before, single_data_after, date_stage, date_index
 
     # 获取数量
     @staticmethod
     def get_count(data):
         single_data_before = {"01": 0, "02": 0, "03": 0, "04": 0, "05": 0, "06": 0, "07": 0, "08": 0, "09": 0, "10": 0,
-                            "11": 0, "12": 0, "13": 0, "14": 0, "15": 0, "16": 0, "17": 0, "18": 0, "19": 0, "20": 0,
-                            "21": 0, "22": 0, "23": 0, "24": 0, "25": 0, "26": 0, "27": 0, "28": 0, "29": 0, "30": 0,
-                            "31": 0, "32": 0, "33": 0, "34": 0, "35": 0}
+                              "11": 0, "12": 0, "13": 0, "14": 0, "15": 0, "16": 0, "17": 0, "18": 0, "19": 0, "20": 0,
+                              "21": 0, "22": 0, "23": 0, "24": 0, "25": 0, "26": 0, "27": 0, "28": 0, "29": 0, "30": 0,
+                              "31": 0, "32": 0, "33": 0, "34": 0, "35": 0}
         single_data_after = {"01": 0, "02": 0, "03": 0, "04": 0, "05": 0, "06": 0, "07": 0, "08": 0, "09": 0, "10": 0,
-                           "11": 0, "12": 0}
+                             "11": 0, "12": 0}
         for item in data:
             for date_item in str.split(item['lotteryDrawResult'], " ")[:-2]:
                 single_data_before[date_item] += 1
@@ -113,11 +117,13 @@ class Service(object):
         n = self.n
         dot_count = self.dot_count
         all_before_average, all_after_average, single_data_before, single_data_after, date_stage, date_index = self._single_data()
-        common.save_file("./images/"+str(m)+"_"+str(step)+"/single/last_stage", date_stage[-1])
+        common.save_file("./images/" + str(m) + "_" + str(step) + "/single/last_stage", date_stage[-1])
 
         print("single_before")
         before_speed_data = []
+        before_item_ema = []
         after_speed_data = []
+        after_item_ema = []
         for i in range(len(self.before)):
             item_ema = common.ema(single_data_before[i], n)
             data_speed = pd.DataFrame(item_ema).pct_change(periods=1, fill_method="pad").stack()
@@ -129,16 +135,19 @@ class Service(object):
                 average_line.append(all_before_average_item)
 
             if self.draw:
-                fig, (ax1, ax2) = plt.subplots(2, 1, figsize=((dot_count/80) * 10, 13))
-                ax1.scatter(range(len(single_data_before[i][-dot_count:])), single_data_before[i][-dot_count:], c="#cccccc", linewidths=1)
+                fig, (ax1, ax2) = plt.subplots(2, 1, figsize=((dot_count / 80) * 10, 13))
+                ax1.scatter(range(len(single_data_before[i][-dot_count:])), single_data_before[i][-dot_count:],
+                            c="#cccccc", linewidths=1)
                 ax1.plot(average_line[-dot_count:], linestyle="-", color="#F52D2D", linewidth=2)
                 ax1.plot(item_ema[-dot_count:], linestyle="-", color="#ababab", linewidth=2)
 
                 ax2.plot(np.array(data_speed[-dot_count:]), linestyle="-", color="#F52D2D", linewidth=2)
-                ax2.plot((np.zeros((len(data_speed[-dot_count:]),), dtype=int)), linestyle="-", color="#000000", linewidth=2)
+                ax2.plot((np.zeros((len(data_speed[-dot_count:]),), dtype=int)), linestyle="-", color="#000000",
+                         linewidth=2)
 
                 plt.xlabel("single_before:" + self.before[i])
-                plt.savefig("./images/"+str(m)+"_"+str(step)+"/single/before_" + self.before[i] + ".jpg", format="jpg", bbox_inches="tight", pad_inches=0,
+                plt.savefig("./images/" + str(m) + "_" + str(step) + "/single/before_" + self.before[i] + ".jpg",
+                            format="jpg", bbox_inches="tight", pad_inches=0,
                             transparent=True, dpi=64)
                 plt.axis("off")
                 plt.clf()
@@ -156,24 +165,30 @@ class Service(object):
                 average_line.append(all_after_average_item)
 
             if self.draw:
-                fig, (ax1, ax2) = plt.subplots(2, 1, figsize=((dot_count/80) * 10, 13))
-                ax1.scatter(range(len(single_data_after[i][-dot_count:])), single_data_after[i][-dot_count:], c="#cccccc", linewidths=1)
+                fig, (ax1, ax2) = plt.subplots(2, 1, figsize=((dot_count / 80) * 10, 13))
+                ax1.scatter(range(len(single_data_after[i][-dot_count:])), single_data_after[i][-dot_count:],
+                            c="#cccccc", linewidths=1)
                 ax1.plot(average_line[-dot_count:], linestyle="-", color="#F52D2D", linewidth=2)
                 ax1.plot(item_ema[-dot_count:], linestyle="-", color="#ababab", linewidth=2)
 
                 ax2.plot(np.array(data_speed[-dot_count:]), linestyle="-", color="#F52D2D", linewidth=2)
-                ax2.plot((np.zeros((len(data_speed[-dot_count:]),), dtype=int)), linestyle="-", color="#000000", linewidth=2)
+                ax2.plot((np.zeros((len(data_speed[-dot_count:]),), dtype=int)), linestyle="-", color="#000000",
+                         linewidth=2)
 
                 plt.xlabel("single_after:" + self.before[i])
-                plt.savefig("./images/"+str(m)+"_"+str(step)+"/single/after_" + self.after[i] + ".jpg", format="jpg", bbox_inches="tight", pad_inches=0,
+                plt.savefig("./images/" + str(m) + "_" + str(step) + "/single/after_" + self.after[i] + ".jpg",
+                            format="jpg", bbox_inches="tight", pad_inches=0,
                             transparent=True, dpi=64)
                 plt.axis("off")
                 plt.clf()
                 plt.close("all")
 
         # 存储均值速率数据
-        common.save_file("./data/"+str(m)+"_"+str(step)+"/single/single_speed_data.json", json.dumps(before_speed_data))
-        common.save_file("./data/"+str(m)+"_"+str(step)+"/single/single_speed_data.json", json.dumps(after_speed_data))
+        common.save_file("./data/" + str(m) + "_" + str(step) + "/single/single_speed_data.json",
+                         json.dumps(before_speed_data))
+        common.save_file("./data/" + str(m) + "_" + str(step) + "/single/single_speed_data.json",
+                         json.dumps(after_speed_data))
+        return before_speed_data, after_speed_data
 
     # 绘制奇偶曲线
     def get_parity_data(self):
@@ -182,10 +197,12 @@ class Service(object):
         n = self.n
         dot_count = self.dot_count
         all_before_average, all_after_average, single_data_before, single_data_after, date_stage, date_index = self._single_data()
-        common.save_file("./images/"+str(m)+"_"+str(step)+"/parity/last_stage", date_stage[-1])
+        common.save_file("./images/" + str(m) + "_" + str(step) + "/parity/last_stage", date_stage[-1])
 
-        before_lines_data = {"1": np.zeros((len(date_stage),), dtype=float).tolist(), "2": np.zeros((len(date_stage),), dtype=float).tolist()}
-        after_lines_data = {"1": np.zeros((len(date_stage),), dtype=float).tolist(), "2": np.zeros((len(date_stage),), dtype=float).tolist()}
+        before_lines_data = {"1": np.zeros((len(date_stage),), dtype=float).tolist(),
+                             "2": np.zeros((len(date_stage),), dtype=float).tolist()}
+        after_lines_data = {"1": np.zeros((len(date_stage),), dtype=float).tolist(),
+                            "2": np.zeros((len(date_stage),), dtype=float).tolist()}
 
         for i in range(len(self.before)):
             parity = common.parity(self.before[i])
@@ -197,8 +214,10 @@ class Service(object):
             for i0 in range(len(date_stage)):
                 after_lines_data[str(parity)][i0] += single_data_after[i][i0]
 
-        before_lines_average = {"1": np.average(np.array(before_lines_data["1"])), "2": np.average(np.array(before_lines_data["2"]))}
-        after_lines_average = {"1": np.average(np.array(after_lines_data["1"])), "2": np.average(np.array(after_lines_data["2"]))}
+        before_lines_average = {"1": np.average(np.array(before_lines_data["1"])),
+                                "2": np.average(np.array(before_lines_data["2"]))}
+        after_lines_average = {"1": np.average(np.array(after_lines_data["1"])),
+                               "2": np.average(np.array(after_lines_data["2"]))}
 
         before_speed_data = []
         after_speed_data = []
@@ -258,10 +277,15 @@ class Service(object):
                 plt.close("all")
 
         # 存储数据
-        common.save_file("./data/"+str(m)+"_"+str(step)+"/parity/before_lines_data.json", json.dumps(np.array(before_lines_data).tolist()))
-        common.save_file("./data/"+str(m)+"_"+str(step)+"/parity/after_lines_data.json", json.dumps(np.array(after_lines_data).tolist()))
-        common.save_file("./data/"+str(m)+"_"+str(step)+"/parity/before_speed_data.json", json.dumps(np.array(before_speed_data).tolist()))
-        common.save_file("./data/"+str(m)+"_"+str(step)+"/parity/after_speed_data.json", json.dumps(np.array(after_speed_data).tolist()))
+        common.save_file("./data/" + str(m) + "_" + str(step) + "/parity/before_lines_data.json",
+                         json.dumps(np.array(before_lines_data).tolist()))
+        common.save_file("./data/" + str(m) + "_" + str(step) + "/parity/after_lines_data.json",
+                         json.dumps(np.array(after_lines_data).tolist()))
+        common.save_file("./data/" + str(m) + "_" + str(step) + "/parity/before_speed_data.json",
+                         json.dumps(np.array(before_speed_data).tolist()))
+        common.save_file("./data/" + str(m) + "_" + str(step) + "/parity/after_speed_data.json",
+                         json.dumps(np.array(after_speed_data).tolist()))
+        return before_lines_data, after_lines_data, before_speed_data, after_speed_data
 
     # 绘制分块曲线
     def get_piece_data(self, b_n: int, a_n: int):
@@ -276,25 +300,27 @@ class Service(object):
         before_pieces = []
         after_pieces = []
         for i in range(len(self.before)):
-            piece_index = int(i/b_n)
+            piece_index = int(i / b_n)
             if len(before_pieces_data) <= piece_index:
                 before_pieces_data.append(single_data_before[i])
                 before_pieces.append([i])
             else:
-                before_pieces_data[piece_index] = (np.array(before_pieces_data[piece_index]) + np.array(single_data_before[i])).tolist()
+                before_pieces_data[piece_index] = (
+                            np.array(before_pieces_data[piece_index]) + np.array(single_data_before[i])).tolist()
                 before_pieces[piece_index].append(i)
 
         for i in range(len(self.after)):
-            piece_index = int(i/a_n)
+            piece_index = int(i / a_n)
             if len(after_pieces_data) <= piece_index:
                 after_pieces_data.append(single_data_before[i])
                 after_pieces.append([i])
             else:
-                after_pieces_data[piece_index] = (np.array(after_pieces_data[piece_index]) + np.array(single_data_after[i])).tolist()
+                after_pieces_data[piece_index] = (
+                            np.array(after_pieces_data[piece_index]) + np.array(single_data_after[i])).tolist()
                 after_pieces[piece_index].append(i)
 
-        common.save_file("./images/"+str(m)+"_"+str(step)+"/piece/before_pieces", json.dumps(before_pieces))
-        common.save_file("./images/"+str(m)+"_"+str(step)+"/piece/after_pieces", json.dumps(after_pieces))
+        common.save_file("./images/" + str(m) + "_" + str(step) + "/piece/before_pieces", json.dumps(before_pieces))
+        common.save_file("./images/" + str(m) + "_" + str(step) + "/piece/after_pieces", json.dumps(after_pieces))
 
         before_speed_data = []
         after_speed_data = []
@@ -355,3 +381,5 @@ class Service(object):
                 plt.axis("off")
                 plt.clf()
                 plt.close("all")
+
+        return before_pieces_data, after_pieces_data, before_speed_data, after_speed_data
