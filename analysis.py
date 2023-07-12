@@ -38,7 +38,7 @@ class Analysis(object):
     def do(self):
 
         m, step, n, draw, dot_count = 30, 1, 15, False, 200
-        b_single_data, a_single_data, date_index = self.get_data(m=m, step=step, n=n, draw=draw, dot_count=dot_count)
+        b_single_data, a_single_data, date_index, b_single_speed_data, a_single_speed_data = self.get_data(m=m, step=step, n=n, draw=draw, dot_count=dot_count)
 
         org_data = common.read_json("./data/data.json")
         b_data = pd.DataFrame(org_data).loc[:, "lotteryDrawResult"].apply(
@@ -62,8 +62,7 @@ class Analysis(object):
         a_y_include_num = 2
         for i in range(len(date_index) - a_y_include_num):
             for i0 in range(len(a_y[i])):
-                if i0 + 1 in np.array(a_data[date_index[i] + 1]).tolist() or i0 + 1 in np.array(
-                        a_data[date_index[i] + 2]).tolist():
+                if i0 + 1 in np.array(a_data[date_index[i] + 1]).tolist() or i0 + 1 in np.array(a_data[date_index[i] + 2]).tolist():
                     a_y[i][i0] = 1
                 else:
                     a_y[i][i0] = 0
@@ -72,24 +71,27 @@ class Analysis(object):
         a_y.T.to_csv("./data/a_y.csv")
 
         b_x = b_single_data
-        a_x = a_single_data
+        a_x = b_single_data
+
         # i = 2
         # self.to_fit_model(b_x, b_y.T[i], "b", i + 1)
         for i in range(35):
             self.to_fit_model(b_x, b_y.T[i], "b", i + 1)
+        for i in range(12):
+            self.to_fit_model(a_x, a_y.T[i], "a", i + 1)
 
     def to_fit_model(self, x, y, place: str, number: int):
 
         x_train, x_test, y_train, y_test = train_test_split(x, y, random_state=90)
 
         scorel = []
-        for i in range(1, 200, 10):
+        for i in range(30, 200, 10):
             rfc = RandomForestClassifier(max_depth=8, n_estimators=i, n_jobs=-1, random_state=90)
             rfc.fit(x_train, preprocessing.LabelEncoder().fit_transform(y_train))
             score = rfc.score(x_test, y_test)
             scorel.append(score)
 
-        n_estimators = ([*range(1, 200, 10)][scorel.index(max(scorel))])
+        n_estimators = ([*range(30, 200, 10)][scorel.index(max(scorel))])
 
         scorel = []
         for i in range(3, 30):
@@ -158,20 +160,30 @@ class Analysis(object):
         single_data_before = pd.DataFrame(single_data_before).T - all_before_average
         single_data_after = pd.DataFrame(single_data_after).T - all_after_average
 
-        return single_data_before, single_data_after, date_index
+        before_speed_data = pd.DataFrame(before_speed_data).T
+        after_speed_data = pd.DataFrame(after_speed_data).T
 
-    def to_predit(self):
+        return single_data_before, single_data_after, date_index, before_speed_data, after_speed_data
+
+    def to_predit(self, before):
 
         m, step, n, draw, dot_count = 30, 1, 15, False, 200
         b_single_data, a_single_data, date_index = self.get_data(m=m, step=step, n=n, draw=draw, dot_count=dot_count)
 
-        b_x = b_single_data[::-1].T[1]
-        # print(b_x)
-        # exit()
+        b_x = b_single_data.T[len(b_single_data) - before - 1]
+
+        print(b_single_data)
+        print(b_x)
         a_x = a_single_data
-        for i in range(26):
+        res = []
+        keys = []
+        for i in range(35):
             with open("./data/model/b_" + str(i + 1) + ".pkl", 'rb') as f:
                 model = pickle.load(f)
-                res = model.predict([b_x])
-                print(str(i + 1), res)
+                y_pred = model.predict([b_x])
+                if y_pred[0] > 0:
+                    keys.append(str(i + 1))
+                    res.append(y_pred[0])
+
+        print(pd.DataFrame(res, keys))
         return

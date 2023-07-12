@@ -127,7 +127,9 @@ class Service(object):
         for i in range(len(self.before)):
             item_ema = common.ema(single_data_before[i], n)
             data_speed = pd.DataFrame(item_ema).pct_change(periods=1, fill_method="pad").stack()
-            before_speed_data.append(data_speed.to_numpy().tolist())
+            data_speed = data_speed.to_numpy().tolist()[::-1]
+            data_speed.append(0)
+            before_speed_data.append(data_speed[::-1])
 
             all_before_average_item = all_before_average[i]
             average_line = []
@@ -157,7 +159,9 @@ class Service(object):
         for i in range(len(self.after)):
             item_ema = common.ema(single_data_after[i], n)
             data_speed = pd.DataFrame(item_ema).pct_change(periods=1, fill_method="pad").stack()
-            after_speed_data.append(data_speed.to_numpy().tolist())
+            data_speed = data_speed.to_numpy().tolist()[::-1]
+            data_speed.append(0)
+            before_speed_data.append(data_speed[::-1])
 
             all_after_average_item = all_after_average[i]
             average_line = []

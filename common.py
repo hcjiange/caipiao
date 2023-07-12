@@ -31,9 +31,9 @@ def read_json(real_path):
 def ema(values, m):
     values = np.array(values)
     res = []
-    for index in range(1, len(values)):
+    for index in range(len(values)):
         start = index - m if index - m >= 0 else 0
-        res.append(np.average(values[start:index]))
+        res.append(np.average(values[start:index+1]))
     return res
 
 
