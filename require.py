@@ -10,6 +10,7 @@ if __name__ == '__main__':
     response_data = json.loads(response.text)
     data = response_data['value']['list']
 
+    data = data[30:]
     csv_content = ""
     for item in data:
         csv_content += item['lotteryDrawNum'] + "," + str.replace(item['lotteryDrawResult'],  " ",  ",") + "\n"

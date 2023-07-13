@@ -20,8 +20,8 @@ if __name__ == '__main__':
     # # 绘制分块曲线
     # s.get_piece_data(b_n=7, a_n=4)
 
-    # s.get_single_count(False)
-    # s.get_single_prob(False)
-    # s.get_single_prob_ema(False)
+    s.get_single_count(False)
+    s.get_single_prob(False)
+    s.get_single_prob_ema(False)
     s.get_single_prob_ema_speed(False)
     s.draw_single()

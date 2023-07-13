@@ -6,6 +6,7 @@ import common
 import service
 import matplotlib.pyplot as plt
 import seaborn as sns
+import os
 
 # 随机森林
 # 导入所需要的包
@@ -46,35 +47,35 @@ class Analysis(object):
         b_single_prob, a_single_prob = s.get_single_prob()
         b_single_prob_ema, a_single_prob_ema = s.get_single_prob_ema()
         b_single_prob_ema_speed, a_single_prob_ema_speed = s.get_single_prob_ema_speed()
+        b_single_prob = b_single_prob.T[2:].T
 
         org_data = common.read_json("./data/data.json")
-        b_data = pd.DataFrame(org_data[30:], b_single_count.T.index[1:]).loc[:, "lotteryDrawResult"].apply(
+        b_data = pd.DataFrame(org_data[30:], b_single_prob.T.index).loc[:, "lotteryDrawResult"].apply(
             lambda x: pd.Series(str(x).split(" ")[:-2]).astype('int').to_numpy().tolist())
         a_data = pd.DataFrame(org_data).loc[:, "lotteryDrawResult"].apply(
             lambda x: pd.Series(str(x).split(" ")[-2:]).astype('int').to_numpy().tolist())
 
         # 复制一个同大小阵列
-        b_y = pd.DataFrame(b_single_count.to_numpy().tolist()).T
+        b_y = pd.DataFrame(b_single_prob.T.to_numpy().tolist(), b_single_prob.T.index).T
         b_y_include_num = 2
-        for i in range(1, len(b_single_count) - b_y_include_num):
-            for i0 in range(len(b_y[i])):
-                if i0 + 1 in np.array(b_data[b_single_count.index[i + 1]]).tolist() or i0 + 1 in np.array(b_data[b_single_count.index[i + 2]]).tolist():
-                    b_y[i][i0] = 1
+        for i in range(0, len(b_single_prob.T) - b_y_include_num):
+            for i0 in range(len(b_y[b_single_prob.T.index[i]])):
+                if i0 + 1 in np.array(b_data[b_single_prob.T.index[i + 1]]).tolist() or i0 + 1 in np.array(b_data[b_single_prob.T.index[i + 2]]).tolist():
+                    b_y[b_single_prob.T.index[i]][i0] = 1
                 else:
-                    b_y[i][i0] = 0
+                    b_y[b_single_prob.T.index[i]][i0] = 0
 
-        print(b_y)
-        exit()
         b_y.T.to_csv("./data/b_y.csv")
         # a_y.T.to_csv("./data/a_y.csv")
 
-        b_x = b_single_count
-        a_x = b_single_count
+        b_x = b_single_prob
+        a_x = a_single_prob
 
-        i = 0
-        self.to_fit_model(b_x, b_y.T[i], "b", i + 1)
-        # for i in range(35):
-        #     self.to_fit_model(b_x, b_y.T[i], "b", i + 1)
+        print("begin:")
+        # i = 0
+        # self.to_fit_model(b_x.T, b_y.T[i], "b", i + 1)
+        for i in range(35):
+            self.to_fit_model(b_x.T, b_y.T[i], "b", i + 1)
         # for i in range(12):
         #     self.to_fit_model(a_x, a_y.T[i], "a", i + 1)
 
@@ -136,6 +137,9 @@ class Analysis(object):
         print('预测数据的分类报告为：', '\n',
               classification_report(y_test, y_pred))
 
+        if not os.path.exists(os.path.dirname("./data/model/")):
+            os.makedirs(os.path.dirname("./data/model/"), mode=7777)
+
         with open("./data/model/" + place + "_" + str(number) + ".pkl", 'wb') as f:
             pickle.dump(model, f)
 
@@ -166,13 +170,18 @@ class Analysis(object):
     def to_predit(self, before):
 
         m, step, n, draw, dot_count = 30, 1, 15, False, 200
-        b_single_data, a_single_data, date_index = self.get_data(m=m, step=step, n=n, draw=draw, dot_count=dot_count)
+        s = service.Service()
+        s.init(m=m, step=step, n=n, draw=draw, dot_count=dot_count)
+        b_single_count, a_single_count = s.get_single_count()
+        b_single_prob, a_single_prob = s.get_single_prob()
+        b_single_prob_ema, a_single_prob_ema = s.get_single_prob_ema()
+        b_single_prob_ema_speed, a_single_prob_ema_speed = s.get_single_prob_ema_speed()
 
-        b_x = b_single_data.T[len(b_single_data) - before - 1]
+        b_x = b_single_count["23048"]
 
-        print(b_single_data)
+        print(b_single_count)
         print(b_x)
-        a_x = a_single_data
+        a_x = b_single_count
         res = []
         keys = []
         for i in range(35):
