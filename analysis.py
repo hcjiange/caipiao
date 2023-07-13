@@ -57,6 +57,7 @@ class Analysis(object):
 
         # 复制一个同大小阵列
         b_y = pd.DataFrame(b_single_prob.T.to_numpy().tolist(), b_single_prob.T.index).T
+        b_y.loc[:, :] = 0
         b_y_include_num = 2
         for i in range(0, len(b_single_prob.T) - b_y_include_num):
             for i0 in range(len(b_y[b_single_prob.T.index[i]])):
@@ -177,11 +178,11 @@ class Analysis(object):
         b_single_prob_ema, a_single_prob_ema = s.get_single_prob_ema()
         b_single_prob_ema_speed, a_single_prob_ema_speed = s.get_single_prob_ema_speed()
 
-        b_x = b_single_count["23048"]
+        b_x = b_single_prob["23043"]
 
-        print(b_single_count)
+        print(b_single_prob)
         print(b_x)
-        a_x = b_single_count
+        a_x = a_single_prob
         res = []
         keys = []
         for i in range(35):
