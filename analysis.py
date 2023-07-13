@@ -38,47 +38,45 @@ class Analysis(object):
     def do(self):
 
         m, step, n, draw, dot_count = 30, 1, 15, False, 200
-        b_single_data, a_single_data, date_index, b_single_speed_data, a_single_speed_data = self.get_data(m=m, step=step, n=n, draw=draw, dot_count=dot_count)
+
+        s = service.Service()
+        s.init(m=m, step=step, n=n, draw=draw, dot_count=dot_count)
+
+        b_single_count, a_single_count = s.get_single_count()
+        b_single_prob, a_single_prob = s.get_single_prob()
+        b_single_prob_ema, a_single_prob_ema = s.get_single_prob_ema()
+        b_single_prob_ema_speed, a_single_prob_ema_speed = s.get_single_prob_ema_speed()
 
         org_data = common.read_json("./data/data.json")
-        b_data = pd.DataFrame(org_data).loc[:, "lotteryDrawResult"].apply(
+        b_data = pd.DataFrame(org_data[30:], b_single_count.T.index[1:]).loc[:, "lotteryDrawResult"].apply(
             lambda x: pd.Series(str(x).split(" ")[:-2]).astype('int').to_numpy().tolist())
         a_data = pd.DataFrame(org_data).loc[:, "lotteryDrawResult"].apply(
             lambda x: pd.Series(str(x).split(" ")[-2:]).astype('int').to_numpy().tolist())
 
         # 复制一个同大小阵列
-        b_y = pd.DataFrame(b_single_data.to_numpy().tolist()).T
+        b_y = pd.DataFrame(b_single_count.to_numpy().tolist()).T
         b_y_include_num = 2
-        for i in range(len(date_index) - b_y_include_num):
+        for i in range(1, len(b_single_count) - b_y_include_num):
             for i0 in range(len(b_y[i])):
-                if i0 + 1 in np.array(b_data[date_index[i] + 1]).tolist() or i0 + 1 in np.array(
-                        b_data[date_index[i] + 2]).tolist():
+                if i0 + 1 in np.array(b_data[b_single_count.index[i + 1]]).tolist() or i0 + 1 in np.array(b_data[b_single_count.index[i + 2]]).tolist():
                     b_y[i][i0] = 1
                 else:
                     b_y[i][i0] = 0
 
-        # 复制一个同大小阵列
-        a_y = pd.DataFrame(a_single_data.to_numpy().tolist()).T
-        a_y_include_num = 2
-        for i in range(len(date_index) - a_y_include_num):
-            for i0 in range(len(a_y[i])):
-                if i0 + 1 in np.array(a_data[date_index[i] + 1]).tolist() or i0 + 1 in np.array(a_data[date_index[i] + 2]).tolist():
-                    a_y[i][i0] = 1
-                else:
-                    a_y[i][i0] = 0
-
+        print(b_y)
+        exit()
         b_y.T.to_csv("./data/b_y.csv")
-        a_y.T.to_csv("./data/a_y.csv")
+        # a_y.T.to_csv("./data/a_y.csv")
 
-        b_x = b_single_data
-        a_x = b_single_data
+        b_x = b_single_count
+        a_x = b_single_count
 
-        # i = 2
-        # self.to_fit_model(b_x, b_y.T[i], "b", i + 1)
-        for i in range(35):
-            self.to_fit_model(b_x, b_y.T[i], "b", i + 1)
-        for i in range(12):
-            self.to_fit_model(a_x, a_y.T[i], "a", i + 1)
+        i = 0
+        self.to_fit_model(b_x, b_y.T[i], "b", i + 1)
+        # for i in range(35):
+        #     self.to_fit_model(b_x, b_y.T[i], "b", i + 1)
+        # for i in range(12):
+        #     self.to_fit_model(a_x, a_y.T[i], "a", i + 1)
 
     def to_fit_model(self, x, y, place: str, number: int):
 

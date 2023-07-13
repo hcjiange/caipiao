@@ -29,13 +29,104 @@ class Service(object):
         self.draw = draw
         self.dot_count = dot_count
 
+    # 获取数量 pass
+    @staticmethod
+    def get_count(data):
+        single_data_before = {"01": 0, "02": 0, "03": 0, "04": 0, "05": 0, "06": 0, "07": 0, "08": 0, "09": 0, "10": 0,
+                              "11": 0, "12": 0, "13": 0, "14": 0, "15": 0, "16": 0, "17": 0, "18": 0, "19": 0, "20": 0,
+                              "21": 0, "22": 0, "23": 0, "24": 0, "25": 0, "26": 0, "27": 0, "28": 0, "29": 0, "30": 0,
+                              "31": 0, "32": 0, "33": 0, "34": 0, "35": 0}
+        single_data_after = {"01": 0, "02": 0, "03": 0, "04": 0, "05": 0, "06": 0, "07": 0, "08": 0, "09": 0, "10": 0,
+                             "11": 0, "12": 0}
+        for item in data:
+            for date_item in str.split(item['lotteryDrawResult'], " ")[:-2]:
+                single_data_before[date_item] += 1
+            for date_item in str.split(item['lotteryDrawResult'], " ")[-2:]:
+                single_data_after[date_item] += 1
+        return single_data_before, single_data_after
+
+    # 获取单号区间内出现的次数 pass
+    def get_single_count(self, is_from_file: bool = True):
+        data = self.data
+        if is_from_file:
+            # 从文件里读取数据
+            b_single_count = pd.read_csv("./data/" + str(self.m) + "_" + str(self.step) + "/b_single_count.csv")
+            a_single_count = pd.read_csv("./data/" + str(self.m) + "_" + str(self.step) + "/a_single_count.csv")
+        else:
+            b_single_count = pd.DataFrame([])
+            a_single_count = pd.DataFrame([])
+            # 获取前m期出现次数
+            for i in range(len(data)):
+                item = data[i]
+                if self.m <= i < len(data) and (i % self.step == 0 or i == len(data) - 1):
+                    b_single_counts, a_single_counts = self.get_count(data[i+1-self.m:i+1])
+                    for i0 in range(len(self.before)):
+                        b_single_count.loc[i0, item['lotteryDrawNum']] = b_single_counts[self.before[i0]]
+                    for i0 in range(len(self.after)):
+                        a_single_count.loc[i0, item['lotteryDrawNum']] = a_single_counts[self.after[i0]]
+
+            # 存储数据
+            if not os.path.exists(os.path.dirname("./data/" + str(self.m) + "_" + str(self.step) + "/")):
+                os.makedirs(os.path.dirname("./data/" + str(self.m) + "_" + str(self.step) + "/"), mode=7777)
+            b_single_count.to_csv("./data/" + str(self.m) + "_" + str(self.step) + "/b_single_count.csv")
+            a_single_count.to_csv("./data/" + str(self.m) + "_" + str(self.step) + "/a_single_count.csv")
+        return b_single_count, a_single_count
+
+    # 获取单号码出现比率 pass
+    def get_single_prob(self, is_from_file: bool = True):
+        b_single_count, a_single_count = self.get_single_count()
+
+        if is_from_file:
+            # 从文件里读取数据
+            b_single_prob = pd.read_csv("./data/" + str(self.m) + "_" + str(self.step) + "/b_single_prob.csv")
+            a_single_prob = pd.read_csv("./data/" + str(self.m) + "_" + str(self.step) + "/a_single_prob.csv")
+        else:
+            # 计算单号码出现比率
+            b_single_prob = b_single_count / (self.m * 5)
+            a_single_prob = a_single_count / (self.m * 2)
+            b_single_prob.to_csv("./data/" + str(self.m) + "_" + str(self.step) + "/b_single_prob.csv")
+            a_single_prob.to_csv("./data/" + str(self.m) + "_" + str(self.step) + "/a_single_prob.csv")
+        return b_single_prob, a_single_prob
+
+    # 获取单号码出现比率移动均线 pass
+    def get_single_prob_ema(self, is_from_file: bool = True):
+        b_single_prob, a_single_prob = self.get_single_prob()
+
+        if is_from_file:
+            # 从文件里读取数据
+            b_single_prob_ema = pd.read_csv("./data/" + str(self.m) + "_" + str(self.step) + "/b_single_prob_ema.csv")
+            a_single_prob_ema = pd.read_csv("./data/" + str(self.m) + "_" + str(self.step) + "/a_single_prob_ema.csv")
+        else:
+            # 计算单号码出现比率
+            b_single_prob_ema = b_single_prob.T.loc[:].apply(lambda x: x.rolling(window=30).mean()).T
+            a_single_prob_ema = a_single_prob.T.loc[:].apply(lambda x: x.rolling(window=30).mean()).T
+            b_single_prob_ema.to_csv("./data/" + str(self.m) + "_" + str(self.step) + "/b_single_prob_ema.csv")
+            a_single_prob_ema.to_csv("./data/" + str(self.m) + "_" + str(self.step) + "/a_single_prob_ema.csv")
+        return b_single_prob_ema, a_single_prob_ema
+
+    # 获取单号码出现比率移动均线速率 pass
+    def get_single_prob_ema_speed(self, is_from_file: bool = True):
+
+        b_single_prob_ema, a_single_prob_ema = self.get_single_prob_ema()
+        if is_from_file:
+            # 从文件里读取数据
+            b_single_prob_ema_speed = pd.read_csv("./data/" + str(self.m) + "_" + str(self.step) + "/b_single_prob_ema_speed.csv")
+            a_single_prob_ema_speed = pd.read_csv("./data/" + str(self.m) + "_" + str(self.step) + "/a_single_prob_ema_speed.csv")
+        else:
+            # 计算单号码出现比率
+            b_single_prob_ema_speed = b_single_prob_ema.T.loc[:].pct_change(periods=1, fill_method="pad").T
+            a_single_prob_ema_speed = a_single_prob_ema.T.loc[:].pct_change(periods=1, fill_method="pad").T
+            b_single_prob_ema_speed.to_csv("./data/" + str(self.m) + "_" + str(self.step) + "/b_single_prob_ema_speed.csv")
+            a_single_prob_ema_speed.to_csv("./data/" + str(self.m) + "_" + str(self.step) + "/a_single_prob_ema_speed.csv")
+        return b_single_prob_ema_speed, a_single_prob_ema_speed
+
     # 生成概率基础数据
     def get_base_data(self, ignore: int = 0):
 
         m = self.m
         step = self.step
 
-        data = self.data[:len(self.data) - ignore]
+        data = self.data
         data_count = len(data)
 
         single_data_before = []
@@ -94,105 +185,43 @@ class Service(object):
         date_index = common.read_json("./data/" + str(m) + "_" + str(step) + "/single_data_index.json")
         return all_before_average, all_after_average, single_data_before, single_data_after, date_stage, date_index
 
-    # 获取数量
-    @staticmethod
-    def get_count(data):
-        single_data_before = {"01": 0, "02": 0, "03": 0, "04": 0, "05": 0, "06": 0, "07": 0, "08": 0, "09": 0, "10": 0,
-                              "11": 0, "12": 0, "13": 0, "14": 0, "15": 0, "16": 0, "17": 0, "18": 0, "19": 0, "20": 0,
-                              "21": 0, "22": 0, "23": 0, "24": 0, "25": 0, "26": 0, "27": 0, "28": 0, "29": 0, "30": 0,
-                              "31": 0, "32": 0, "33": 0, "34": 0, "35": 0}
-        single_data_after = {"01": 0, "02": 0, "03": 0, "04": 0, "05": 0, "06": 0, "07": 0, "08": 0, "09": 0, "10": 0,
-                             "11": 0, "12": 0}
-        for item in data:
-            for date_item in str.split(item['lotteryDrawResult'], " ")[:-2]:
-                single_data_before[date_item] += 1
-            for date_item in str.split(item['lotteryDrawResult'], " ")[-2:]:
-                single_data_after[date_item] += 1
-        return single_data_before, single_data_after
-
     # 绘制单号曲线
-    def get_single_data(self):
-        m = self.m
-        step = self.step
-        n = self.n
-        dot_count = self.dot_count
-        all_before_average, all_after_average, single_data_before, single_data_after, date_stage, date_index = self._single_data()
-        common.save_file("./images/" + str(m) + "_" + str(step) + "/single/last_stage", date_stage[-1])
+    def draw_single(self):
 
-        print("single_before")
-        before_speed_data = []
-        before_item_ema = []
-        after_speed_data = []
-        after_item_ema = []
-        for i in range(len(self.before)):
-            item_ema = common.ema(single_data_before[i], n)
-            data_speed = pd.DataFrame(item_ema).pct_change(periods=1, fill_method="pad").stack()
-            data_speed = data_speed.to_numpy().tolist()[::-1]
-            data_speed.append(0)
-            before_speed_data.append(data_speed[::-1])
+        dot_count = 500
 
-            all_before_average_item = all_before_average[i]
-            average_line = []
-            for i0 in range(len(date_stage)):
-                average_line.append(all_before_average_item)
+        b_single_prob, a_single_prob = self.get_single_prob()
+        b_single_prob_ema, a_single_prob_ema = self.get_single_prob_ema()
+        b_single_prob_ema_speed, a_single_prob_ema_speed = self.get_single_prob_ema_speed()
 
-            if self.draw:
-                fig, (ax1, ax2) = plt.subplots(2, 1, figsize=((dot_count / 80) * 10, 13))
-                ax1.scatter(range(len(single_data_before[i][-dot_count:])), single_data_before[i][-dot_count:],
-                            c="#cccccc", linewidths=1)
-                ax1.plot(average_line[-dot_count:], linestyle="-", color="#F52D2D", linewidth=2)
-                ax1.plot(item_ema[-dot_count:], linestyle="-", color="#ababab", linewidth=2)
+        # 创建文件夹数据
+        if not os.path.exists(os.path.dirname("./images/" + str(self.m) + "_" + str(self.step) + "/single/")):
+            os.makedirs(os.path.dirname("./images/" + str(self.m) + "_" + str(self.step) + "/single/"), mode=7777)
 
-                ax2.plot(np.array(data_speed[-dot_count:]), linestyle="-", color="#F52D2D", linewidth=2)
-                ax2.plot((np.zeros((len(data_speed[-dot_count:]),), dtype=int)), linestyle="-", color="#000000",
-                         linewidth=2)
+        for i in range(len(b_single_prob)):
 
-                plt.xlabel("single_before:" + self.before[i])
-                plt.savefig("./images/" + str(m) + "_" + str(step) + "/single/before_" + self.before[i] + ".jpg",
-                            format="jpg", bbox_inches="tight", pad_inches=0,
-                            transparent=True, dpi=64)
-                plt.axis("off")
-                plt.clf()
-                plt.close("all")
+            fig, (ax1, ax2) = plt.subplots(2, 1, figsize=((dot_count / 80) * 10, 13))
 
-        print("single_after")
-        for i in range(len(self.after)):
-            item_ema = common.ema(single_data_after[i], n)
-            data_speed = pd.DataFrame(item_ema).pct_change(periods=1, fill_method="pad").stack()
-            data_speed = data_speed.to_numpy().tolist()[::-1]
-            data_speed.append(0)
-            before_speed_data.append(data_speed[::-1])
+            ax1.scatter(range(len(b_single_prob.loc[i][-dot_count:])), b_single_prob.loc[i][-dot_count:],
+                        c="#cccccc", linewidths=1)
+            ax1.plot(b_single_prob_ema.loc[i][-dot_count:], linestyle="-", color="#ababab", linewidth=2)
 
-            all_after_average_item = all_after_average[i]
-            average_line = []
-            for i0 in range(len(date_stage)):
-                average_line.append(all_after_average_item)
+            ax2.plot(b_single_prob_ema_speed.loc[i][-dot_count:], linestyle="-", color="#F52D2D", linewidth=2)
+            ax2.plot(np.zeros((len(b_single_prob_ema_speed.loc[i][-dot_count:]))), linestyle="-", color="#F52D2D", linewidth=2)
+            plt.show()
+            exit()
 
-            if self.draw:
-                fig, (ax1, ax2) = plt.subplots(2, 1, figsize=((dot_count / 80) * 10, 13))
-                ax1.scatter(range(len(single_data_after[i][-dot_count:])), single_data_after[i][-dot_count:],
-                            c="#cccccc", linewidths=1)
-                ax1.plot(average_line[-dot_count:], linestyle="-", color="#F52D2D", linewidth=2)
-                ax1.plot(item_ema[-dot_count:], linestyle="-", color="#ababab", linewidth=2)
+            # ax2.plot(np.array(data_speed[-dot_count:]), linestyle="-", color="#F52D2D", linewidth=2)
+            # ax2.plot((np.zeros((len(data_speed[-dot_count:]),), dtype=int)), linestyle="-", color="#000000",
+            #          linewidth=2)
 
-                ax2.plot(np.array(data_speed[-dot_count:]), linestyle="-", color="#F52D2D", linewidth=2)
-                ax2.plot((np.zeros((len(data_speed[-dot_count:]),), dtype=int)), linestyle="-", color="#000000",
-                         linewidth=2)
-
-                plt.xlabel("single_after:" + self.before[i])
-                plt.savefig("./images/" + str(m) + "_" + str(step) + "/single/after_" + self.after[i] + ".jpg",
-                            format="jpg", bbox_inches="tight", pad_inches=0,
-                            transparent=True, dpi=64)
-                plt.axis("off")
-                plt.clf()
-                plt.close("all")
-
-        # 存储均值速率数据
-        common.save_file("./data/" + str(m) + "_" + str(step) + "/single/single_speed_data.json",
-                         json.dumps(before_speed_data))
-        common.save_file("./data/" + str(m) + "_" + str(step) + "/single/single_speed_data.json",
-                         json.dumps(after_speed_data))
-        return before_speed_data, after_speed_data
+            plt.xlabel("single_before:" + self.before[i])
+            plt.savefig("./images/" + str(self.m) + "_" + str(self.step) + "/single/before_" + self.before[i] + ".jpg",
+                        format="jpg", bbox_inches="tight", pad_inches=0,
+                        transparent=True, dpi=64)
+            plt.axis("off")
+            plt.clf()
+            plt.close("all")
 
     # 绘制奇偶曲线
     def get_parity_data(self):
