@@ -47,7 +47,7 @@ class Analysis(object):
         b_single_prob, a_single_prob = s.get_single_prob()
         b_single_prob_ema, a_single_prob_ema = s.get_single_prob_ema()
         b_single_prob_ema_speed, a_single_prob_ema_speed = s.get_single_prob_ema_speed()
-        b_single_prob = b_single_prob.T[2:].T
+        b_single_prob = b_single_prob
 
         org_data = common.read_json("./data/data.json")
         b_data = pd.DataFrame(org_data[30:], b_single_prob.T.index).loc[:, "lotteryDrawResult"].apply(

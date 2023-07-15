@@ -63,5 +63,4 @@ target/
 venv/
 conf/
 log/
-data/
 images/
