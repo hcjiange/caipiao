@@ -179,23 +179,22 @@ class Service(object):
             # 从文件里读取数据
             b_piece_count = pd.read_csv("./data/" + str(self.m) + "_" + str(self.step) + "/b_piece_count.csv").iloc[:, 1:]
             a_piece_count = pd.read_csv("./data/" + str(self.m) + "_" + str(self.step) + "/a_piece_count.csv").iloc[:, 1:]
-            b_index = pd.read_csv("./data/" + str(self.m) + "_" + str(self.step) + "/b_piece_index.csv")
-            a_index = pd.read_csv("./data/" + str(self.m) + "_" + str(self.step) + "/a_piece_index.csv")
+            b_index = pd.read_csv("./data/" + str(self.m) + "_" + str(self.step) + "/b_piece_index.csv").iloc[:, 1:]
+            a_index = pd.read_csv("./data/" + str(self.m) + "_" + str(self.step) + "/a_piece_index.csv").iloc[:, 1:]
         else:
             b_single_count, a_single_count = self.get_single_count()
             b_piece_count = pd.DataFrame({0: b_single_count.loc[0]}, b_single_count.loc[0].index).T
             a_piece_count = pd.DataFrame({0: a_single_count.loc[0]}, a_single_count.loc[0].index).T
             b_index = []
             a_index = []
-            include = []
+            include = [0]
             piece_index = 0
             for i in range(1, len(b_single_count.index)):
                 if piece_index == int(i / b_n) and i != len(b_single_count.index) - 1:
                     include.append(i)
                 else:
                     piece_index = int(i / b_n)
-                    include.append(i)
-                    b_index.append(','.join(str(i) for i in include))
+                    b_index.append(include)
                     include = [i]
 
                 if len(b_piece_count) > piece_index:
@@ -204,15 +203,14 @@ class Service(object):
                 else:
                     b_piece_count.loc[piece_index] = b_single_count.loc[i-1]
 
-            include = []
+            include = [0]
             piece_index = 0
             for i in range(1, len(a_single_count.index)):
                 if piece_index == int(i / a_n) and i != len(a_single_count.index) - 1:
                     include.append(i)
                 else:
                     piece_index = int(i / a_n)
-                    include.append(i)
-                    a_index.append(','.join(str(i) for i in include))
+                    a_index.append(include)
                     include = [i]
 
                 if len(a_piece_count) > piece_index:
@@ -470,5 +468,61 @@ class Service(object):
             plt.clf()
             plt.close("all")
 
-    def get_y_data(self):
-        b_single_count, a_single_count = self.get_single_count()
+    # 获取y数据 pass
+    def get_y_data(self, is_from_file: bool = True):
+
+        if is_from_file:
+            # 从文件里读取数据
+            b_y = pd.read_csv("./data/b_y.csv").iloc[:, 1:]
+            a_y = pd.read_csv("./data/a_y.csv").iloc[:, 1:]
+        else:
+            org_data = common.read_json("./data/data.json")
+            index = pd.DataFrame(org_data).loc[:, "lotteryDrawNum"]
+            b_data = pd.DataFrame(org_data, index).loc[:, "lotteryDrawResult"].apply(
+                lambda x: pd.Series(str(x).split(" ")[:-2]).astype('int').to_numpy().tolist())
+            a_data = pd.DataFrame(org_data, index).loc[:, "lotteryDrawResult"].apply(
+                lambda x: pd.Series(str(x).split(" ")[-2:]).astype('int').to_numpy().tolist())
+
+            # 复制一个同大小阵列
+            b_y = pd.DataFrame([], index)
+            a_y = pd.DataFrame([], index)
+            y_include_num = 6
+
+            for i in range(len(index) - y_include_num):
+                for i0 in range(35):
+                    if i0 + 1 in np.array(b_data.iloc[i + 1]).tolist():
+                        b_y.loc[index[i], i0] = 1
+                    elif i0 + 1 in np.array(b_data.iloc[i + 2]).tolist():
+                        b_y.loc[index[i], i0] = 1
+                    elif i0 + 1 in np.array(b_data.iloc[i + 3]).tolist():
+                        b_y.loc[index[i], i0] = 1
+                    elif i0 + 1 in np.array(b_data.iloc[i + 4]).tolist():
+                        b_y.loc[index[i], i0] = 1
+                    elif i0 + 1 in np.array(b_data.iloc[i + 5]).tolist():
+                        b_y.loc[index[i], i0] = 1
+                    # elif i0 + 1 in np.array(b_data.iloc[i + 6]).tolist():
+                    #     b_y.loc[index[i], i0] = 1
+                    else:
+                        b_y.loc[index[i], i0] = 0
+
+            for i in range(len(index) - y_include_num):
+                for i0 in range(12):
+                    if i0 + 1 in np.array(a_data.iloc[i + 1]).tolist():
+                        a_y.loc[index[i], i0] = 1
+                    elif i0 + 1 in np.array(a_data.iloc[i + 2]).tolist():
+                        a_y.loc[index[i], i0] = 1
+                    elif i0 + 1 in np.array(a_data.iloc[i + 3]).tolist():
+                        a_y.loc[index[i], i0] = 1
+                    elif i0 + 1 in np.array(a_data.iloc[i + 4]).tolist():
+                        a_y.loc[index[i], i0] = 1
+                    elif i0 + 1 in np.array(a_data.iloc[i + 5]).tolist():
+                        a_y.loc[index[i], i0] = 1
+                    # elif i0 + 1 in np.array(a_data.iloc[i + 6]).tolist():
+                    #     a_y.loc[index[i], i0] = 1
+                    else:
+                        a_y.loc[index[i], i0] = 0
+
+            b_y.T.to_csv("./data/b_y.csv")
+            a_y.T.to_csv("./data/a_y.csv")
+
+        return b_y, a_y
