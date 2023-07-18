@@ -14,19 +14,19 @@ if __name__ == '__main__':
     s.get_single_prob(False)
     s.get_single_prob_ema(False)
     s.get_single_prob_ema_speed(False)
-    s.draw_single()
+    # s.draw_single()
 
     s.get_piece_count(False)
     s.get_piece_prob(False)
     s.get_piece_prob_ema(False)
     s.get_piece_prob_ema_speed(False)
-    s.draw_piece()
+    # s.draw_piece()
 
     s.get_parity_count(False)
     s.get_parity_prob(False)
     s.get_parity_prob_ema(False)
     s.get_parity_prob_ema_speed(False)
-    s.draw_parity()
+    # s.draw_parity()
 
 
     # m：窗口大小，step：步长, n：均线窗口大小
@@ -36,19 +36,19 @@ if __name__ == '__main__':
     s.get_single_prob(False)
     s.get_single_prob_ema(False)
     s.get_single_prob_ema_speed(False)
-    s.draw_single()
+    # s.draw_single()
 
     s.get_piece_count(False)
     s.get_piece_prob(False)
     s.get_piece_prob_ema(False)
     s.get_piece_prob_ema_speed(False)
-    s.draw_piece()
+    # s.draw_piece()
 
     s.get_parity_count(False)
     s.get_parity_prob(False)
     s.get_parity_prob_ema(False)
     s.get_parity_prob_ema_speed(False)
-    s.draw_parity()
+    # s.draw_parity()
 
 
     m, step, n, draw, dot_count = 32, 1, 15, False, 500
@@ -57,19 +57,19 @@ if __name__ == '__main__':
     s.get_single_prob(False)
     s.get_single_prob_ema(False)
     s.get_single_prob_ema_speed(False)
-    s.draw_single()
+    # s.draw_single()
 
     s.get_piece_count(False)
     s.get_piece_prob(False)
     s.get_piece_prob_ema(False)
     s.get_piece_prob_ema_speed(False)
-    s.draw_piece()
+    # s.draw_piece()
 
     s.get_parity_count(False)
     s.get_parity_prob(False)
     s.get_parity_prob_ema(False)
     s.get_parity_prob_ema_speed(False)
-    s.draw_parity()
+    # s.draw_parity()
 
 
     m, step, n, draw, dot_count = 56, 1, 15, False, 500
@@ -78,17 +78,17 @@ if __name__ == '__main__':
     s.get_single_prob(False)
     s.get_single_prob_ema(False)
     s.get_single_prob_ema_speed(False)
-    s.draw_single()
+    # s.draw_single()
 
     s.get_piece_count(False)
     s.get_piece_prob(False)
     s.get_piece_prob_ema(False)
     s.get_piece_prob_ema_speed(False)
-    s.draw_piece()
+    # s.draw_piece()
 
     s.get_parity_count(False)
     s.get_parity_prob(False)
     s.get_parity_prob_ema(False)
     s.get_parity_prob_ema_speed(False)
-    s.draw_parity()
+    # s.draw_parity()
 

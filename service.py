@@ -498,8 +498,8 @@ class Service(object):
                         b_y.loc[index[i], i0] = 1
                     elif i0 + 1 in np.array(b_data.iloc[i + 4]).tolist():
                         b_y.loc[index[i], i0] = 1
-                    elif i0 + 1 in np.array(b_data.iloc[i + 5]).tolist():
-                        b_y.loc[index[i], i0] = 1
+                    # elif i0 + 1 in np.array(b_data.iloc[i + 5]).tolist():
+                    #     b_y.loc[index[i], i0] = 1
                     # elif i0 + 1 in np.array(b_data.iloc[i + 6]).tolist():
                     #     b_y.loc[index[i], i0] = 1
                     else:
@@ -515,8 +515,8 @@ class Service(object):
                         a_y.loc[index[i], i0] = 1
                     elif i0 + 1 in np.array(a_data.iloc[i + 4]).tolist():
                         a_y.loc[index[i], i0] = 1
-                    elif i0 + 1 in np.array(a_data.iloc[i + 5]).tolist():
-                        a_y.loc[index[i], i0] = 1
+                    # elif i0 + 1 in np.array(a_data.iloc[i + 5]).tolist():
+                    #     a_y.loc[index[i], i0] = 1
                     # elif i0 + 1 in np.array(a_data.iloc[i + 6]).tolist():
                     #     a_y.loc[index[i], i0] = 1
                     else:

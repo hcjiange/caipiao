@@ -119,10 +119,10 @@ class Analysis(object):
         res = []
         keys = []
         for i in range(28):
-            b_x, a_x = self.get_fit_data(i, -1, "23070", "23077")
+            b_x, a_x = self.get_fit_data(i, -1, "23070", "23080")
             with open("./data/model/b_" + str(i + 1) + ".pkl", 'rb') as f:
                 model = pickle.load(f)
-                y_pred = model.predict([b_x.T["23076"]])
+                y_pred = model.predict([b_x.T["23080"]])
                 if y_pred[0] > 0:
                     keys.append(str(i + 1))
                     res.append(y_pred[0])
