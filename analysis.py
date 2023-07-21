@@ -39,11 +39,12 @@ class Analysis(object):
     # 训练
     def do(self):
 
-        for i in range(35):
+        for i in range(29, 35):
             x, y = self.get_fit_data(i, -1)
             self.to_fit_model(x, y, "b", i + 1)
-        # for i in range(12):
-        #     self.to_fit_model(a_x, a_y.T[i], "a", i + 1)
+        for i in range(12):
+            x, y = self.get_fit_data(-1, i)
+            self.to_fit_model(x, y, "a", i + 1)
 
     # 进行分项训练
     def to_fit_model(self, x, y, place: str, number: int):
@@ -116,18 +117,23 @@ class Analysis(object):
     # 预测
     def to_predit(self, before):
 
-        res = []
-        keys = []
-        for i in range(28):
-            b_x, a_x = self.get_fit_data(i, -1, "23070", "23080")
+        for i in range(35):
+            x, y = self.get_fit_data(i, -1, "23070", "23080")
             with open("./data/model/b_" + str(i + 1) + ".pkl", 'rb') as f:
                 model = pickle.load(f)
-                y_pred = model.predict([b_x.T["23080"]])
+                y_pred = model.predict([x.T["23077"], x.T["23078"], x.T["23079"], x.T["23080"]])
                 if y_pred[0] > 0:
-                    keys.append(str(i + 1))
-                    res.append(y_pred[0])
+                    print(str(i + 1), " ", y_pred[0])
 
-        print(pd.DataFrame(res, keys))
+        for i in range(12):
+            x, y = self.get_fit_data(-1, i, "23070", "23080")
+            with open("./data/model/a_" + str(i + 1) + ".pkl", 'rb') as f:
+                model = pickle.load(f)
+                y_pred = model.predict([x.T["23077"], x.T["23078"], x.T["23079"], x.T["23080"]])
+                print(str(i + 1), " ", item)
+                for item in y_pred:
+                    print(str(i + 1), " ", item)
+
         return
 
     # 获取训练数据
@@ -147,6 +153,11 @@ class Analysis(object):
         b_piece_prob_ema1, a_piece_prob_ema1 = s.get_piece_prob_ema()
         b_piece_prob_ema_speed1, a_piece_prob_ema_speed1 = s.get_piece_prob_ema_speed()
 
+        b_parity_count1, a_parity_count1 = s.get_parity_count()
+        b_parity_prob1, a_parity_prob1 = s.get_parity_prob()
+        b_parity_prob_ema1, a_parity_prob_ema1 = s.get_parity_prob_ema()
+        b_parity_prob_ema_speed1, a_parity_prob_ema_speed1 = s.get_parity_prob_ema_speed()
+
         m, step, n, draw, dot_count = 16, 1, 15, False, 500
         s.init(m=m, step=step, n=n, draw=draw, dot_count=dot_count)
         b_single_count2, a_single_count2 = s.get_single_count()
@@ -158,6 +169,11 @@ class Analysis(object):
         b_piece_prob2, a_piece_prob2 = s.get_piece_prob()
         b_piece_prob_ema2, a_piece_prob_ema2 = s.get_piece_prob_ema()
         b_piece_prob_ema_speed2, a_piece_prob_ema_speed2 = s.get_piece_prob_ema_speed()
+
+        b_parity_count2, a_parity_count2 = s.get_parity_count()
+        b_parity_prob2, a_parity_prob2 = s.get_parity_prob()
+        b_parity_prob_ema2, a_parity_prob_ema2 = s.get_parity_prob_ema()
+        b_parity_prob_ema_speed2, a_parity_prob_ema_speed2 = s.get_parity_prob_ema_speed()
 
         m, step, n, draw, dot_count = 32, 1, 15, False, 500
         s.init(m=m, step=step, n=n, draw=draw, dot_count=dot_count)
@@ -171,6 +187,11 @@ class Analysis(object):
         b_piece_prob_ema3, a_piece_prob_ema3 = s.get_piece_prob_ema()
         b_piece_prob_ema_speed3, a_piece_prob_ema_speed3 = s.get_piece_prob_ema_speed()
 
+        b_parity_count3, a_parity_count3 = s.get_parity_count()
+        b_parity_prob3, a_parity_prob3 = s.get_parity_prob()
+        b_parity_prob_ema3, a_parity_prob_ema3 = s.get_parity_prob_ema()
+        b_parity_prob_ema_speed3, a_parity_prob_ema_speed3 = s.get_parity_prob_ema_speed()
+
         m, step, n, draw, dot_count = 56, 1, 15, False, 500
         s.init(m=m, step=step, n=n, draw=draw, dot_count=dot_count)
         b_single_count5, a_single_count5 = s.get_single_count()
@@ -183,6 +204,11 @@ class Analysis(object):
         b_piece_prob_ema5, a_piece_prob_ema5 = s.get_piece_prob_ema()
         b_piece_prob_ema_speed5, a_piece_prob_ema_speed5 = s.get_piece_prob_ema_speed()
 
+        b_parity_count5, a_parity_count5 = s.get_parity_count()
+        b_parity_prob5, a_parity_prob5 = s.get_parity_prob()
+        b_parity_prob_ema5, a_parity_prob_ema5 = s.get_parity_prob_ema()
+        b_parity_prob_ema_speed5, a_parity_prob_ema_speed5 = s.get_parity_prob_ema_speed()
+
         b_y, a_y = s.get_y_data()
         x = pd.DataFrame([], b_single_count3.iloc[b_index][begin_index: end_index].index).T
 
@@ -190,8 +216,8 @@ class Analysis(object):
             y = b_y.iloc[b_index][begin_index: end_index]
             x.loc["b_single_count1"] = b_single_count1.iloc[b_index][begin_index: end_index]
             x.loc["b_single_count2"] = b_single_count2.iloc[b_index][begin_index: end_index]
-            x.loc["b_single_count3"] = b_single_count3.iloc[b_index][begin_index: end_index]
-            x.loc["b_single_count5"] = b_single_count5.iloc[b_index][begin_index: end_index]
+            # x.loc["b_single_count3"] = b_single_count3.iloc[b_index][begin_index: end_index]
+            # x.loc["b_single_count5"] = b_single_count5.iloc[b_index][begin_index: end_index]
             x.loc["b_single_prob1"] = b_single_prob1.iloc[b_index][begin_index: end_index]
             x.loc["b_single_prob2"] = b_single_prob2.iloc[b_index][begin_index: end_index]
             x.loc["b_single_prob3"] = b_single_prob3.iloc[b_index][begin_index: end_index]
@@ -200,21 +226,21 @@ class Analysis(object):
             x.loc["b_single_prob_ema2"] = b_single_prob_ema2.iloc[b_index][begin_index: end_index]
             x.loc["b_single_prob_ema3"] = b_single_prob_ema3.iloc[b_index][begin_index: end_index]
             x.loc["b_single_prob_ema5"] = b_single_prob_ema5.iloc[b_index][begin_index: end_index]
-            x.loc["b_single_prob_ema_speed1"] = b_single_prob_ema_speed1.iloc[b_index][begin_index: end_index]
-            x.loc["b_single_prob_ema_speed2"] = b_single_prob_ema_speed2.iloc[b_index][begin_index: end_index]
-            x.loc["b_single_prob_ema_speed3"] = b_single_prob_ema_speed3.iloc[b_index][begin_index: end_index]
-            x.loc["b_single_prob_ema_speed5"] = b_single_prob_ema_speed5.iloc[b_index][begin_index: end_index]
+            # x.loc["b_single_prob_ema_speed1"] = b_single_prob_ema_speed1.iloc[b_index][begin_index: end_index]
+            # x.loc["b_single_prob_ema_speed2"] = b_single_prob_ema_speed2.iloc[b_index][begin_index: end_index]
+            # x.loc["b_single_prob_ema_speed3"] = b_single_prob_ema_speed3.iloc[b_index][begin_index: end_index]
+            # x.loc["b_single_prob_ema_speed5"] = b_single_prob_ema_speed5.iloc[b_index][begin_index: end_index]
 
             piece_index = 0
+            b_piece_index5 = b_piece_index5.fillna(0)
             for i0 in range(len(b_piece_index5)):
                 if b_index in b_piece_index5.iloc[i0].astype('int').to_numpy().tolist():
                     piece_index = i0
                     break
-            print(piece_index)
             x.loc["b_piece_count1"] = b_piece_count1.iloc[piece_index][begin_index: end_index]
             x.loc["b_piece_count2"] = b_piece_count2.iloc[piece_index][begin_index: end_index]
-            x.loc["b_piece_count3"] = b_piece_count3.iloc[piece_index][begin_index: end_index]
-            x.loc["b_piece_count5"] = b_piece_count5.iloc[piece_index][begin_index: end_index]
+            # x.loc["b_piece_count3"] = b_piece_count3.iloc[piece_index][begin_index: end_index]
+            # x.loc["b_piece_count5"] = b_piece_count5.iloc[piece_index][begin_index: end_index]
             x.loc["b_piece_prob1"] = b_piece_prob1.iloc[piece_index][begin_index: end_index]
             x.loc["b_piece_prob2"] = b_piece_prob2.iloc[piece_index][begin_index: end_index]
             x.loc["b_piece_prob3"] = b_piece_prob3.iloc[piece_index][begin_index: end_index]
@@ -227,6 +253,24 @@ class Analysis(object):
             # x.loc["b_piece_prob_ema_speed2"] = b_piece_prob_ema_speed2.iloc[piece_index][begin_index: end_index]
             # x.loc["b_piece_prob_ema_speed3"] = b_piece_prob_ema_speed3.iloc[piece_index][begin_index: end_index]
             # x.loc["b_piece_prob_ema_speed5"] = b_piece_prob_ema_speed5.iloc[piece_index][begin_index: end_index]
+
+            parity = common.parity(piece_index) - 1
+            x.loc["b_parity_count1"] = b_parity_count1.iloc[parity][begin_index: end_index]
+            x.loc["b_parity_count2"] = b_parity_count2.iloc[parity][begin_index: end_index]
+            # x.loc["b_parity_count3"] = b_parity_count3.iloc[parity][begin_index: end_index]
+            # x.loc["b_parity_count5"] = b_parity_count5.iloc[parity][begin_index: end_index]
+            x.loc["b_parity_prob1"] = b_parity_prob1.iloc[parity][begin_index: end_index]
+            x.loc["b_parity_prob2"] = b_parity_prob2.iloc[parity][begin_index: end_index]
+            x.loc["b_parity_prob3"] = b_parity_prob3.iloc[parity][begin_index: end_index]
+            x.loc["b_parity_prob5"] = b_parity_prob5.iloc[parity][begin_index: end_index]
+            x.loc["b_parity_prob_ema1"] = b_parity_prob_ema1.iloc[parity][begin_index: end_index]
+            x.loc["b_parity_prob_ema2"] = b_parity_prob_ema2.iloc[parity][begin_index: end_index]
+            x.loc["b_parity_prob_ema3"] = b_parity_prob_ema3.iloc[parity][begin_index: end_index]
+            x.loc["b_parity_prob_ema5"] = b_parity_prob_ema5.iloc[parity][begin_index: end_index]
+            # x.loc["b_parity_prob_ema_speed1"] = b_parity_prob_ema_speed1.iloc[parity][begin_index: end_index]
+            # x.loc["b_parity_prob_ema_speed2"] = b_parity_prob_ema_speed2.iloc[parity][begin_index: end_index]
+            # x.loc["b_parity_prob_ema_speed3"] = b_parity_prob_ema_speed3.iloc[parity][begin_index: end_index]
+            # x.loc["b_parity_prob_ema_speed5"] = b_parity_prob_ema_speed5.iloc[parity][begin_index: end_index]
 
         else:
             y = a_y.iloc[a_index][begin_index: end_index]
@@ -242,30 +286,55 @@ class Analysis(object):
             x.loc["a_single_prob_ema2"] = a_single_prob_ema2.iloc[a_index][begin_index: end_index]
             x.loc["a_single_prob_ema3"] = a_single_prob_ema3.iloc[a_index][begin_index: end_index]
             x.loc["a_single_prob_ema5"] = a_single_prob_ema5.iloc[a_index][begin_index: end_index]
-            x.loc["a_single_prob_ema_speed1"] = a_single_prob_ema_speed1.iloc[a_index][begin_index: end_index]
-            x.loc["a_single_prob_ema_speed2"] = a_single_prob_ema_speed2.iloc[a_index][begin_index: end_index]
-            x.loc["a_single_prob_ema_speed3"] = a_single_prob_ema_speed3.iloc[a_index][begin_index: end_index]
-            x.loc["a_single_prob_ema_speed5"] = a_single_prob_ema_speed5.iloc[a_index][begin_index: end_index]
+            # x.loc["a_single_prob_ema_speed1"] = a_single_prob_ema_speed1.iloc[a_index][begin_index: end_index]
+            # x.loc["a_single_prob_ema_speed2"] = a_single_prob_ema_speed2.iloc[a_index][begin_index: end_index]
+            # x.loc["a_single_prob_ema_speed3"] = a_single_prob_ema_speed3.iloc[a_index][begin_index: end_index]
+            # x.loc["a_single_prob_ema_speed5"] = a_single_prob_ema_speed5.iloc[a_index][begin_index: end_index]
 
-            x.loc["a_piece_count1"] = a_piece_count1.iloc[b_index][begin_index: end_index]
-            x.loc["a_piece_count2"] = a_piece_count2.iloc[b_index][begin_index: end_index]
-            x.loc["a_piece_count3"] = a_piece_count3.iloc[b_index][begin_index: end_index]
-            x.loc["a_piece_count5"] = a_piece_count5.iloc[b_index][begin_index: end_index]
-            x.loc["a_piece_prob1"] = a_piece_prob1.iloc[b_index][begin_index: end_index]
-            x.loc["a_piece_prob2"] = a_piece_prob2.iloc[b_index][begin_index: end_index]
-            x.loc["a_piece_prob3"] = a_piece_prob3.iloc[b_index][begin_index: end_index]
-            x.loc["a_piece_prob5"] = a_piece_prob5.iloc[b_index][begin_index: end_index]
-            x.loc["a_piece_prob_ema1"] = a_piece_prob_ema1.iloc[b_index][begin_index: end_index]
-            x.loc["a_piece_prob_ema2"] = a_piece_prob_ema2.iloc[b_index][begin_index: end_index]
-            x.loc["a_piece_prob_ema3"] = a_piece_prob_ema3.iloc[b_index][begin_index: end_index]
-            x.loc["a_piece_prob_ema5"] = a_piece_prob_ema5.iloc[b_index][begin_index: end_index]
-            x.loc["a_piece_prob_ema_speed1"] = a_piece_prob_ema_speed1.iloc[b_index][begin_index: end_index]
-            x.loc["a_piece_prob_ema_speed2"] = a_piece_prob_ema_speed2.iloc[b_index][begin_index: end_index]
-            x.loc["a_piece_prob_ema_speed3"] = a_piece_prob_ema_speed3.iloc[b_index][begin_index: end_index]
-            x.loc["a_piece_prob_ema_speed5"] = a_piece_prob_ema_speed5.iloc[b_index][begin_index: end_index]
+            piece_index = 0
+            a_piece_index3 = a_piece_index3.fillna(0)
+            for i0 in range(len(a_piece_index3)):
+                if a_index in a_piece_index3.iloc[i0].astype('int').to_numpy().tolist():
+                    piece_index = i0
+                    break
+            x.loc["a_piece_count1"] = a_piece_count1.iloc[piece_index][begin_index: end_index]
+            x.loc["a_piece_count2"] = a_piece_count2.iloc[piece_index][begin_index: end_index]
+            x.loc["a_piece_count3"] = a_piece_count3.iloc[piece_index][begin_index: end_index]
+            x.loc["a_piece_count5"] = a_piece_count5.iloc[piece_index][begin_index: end_index]
+            x.loc["a_piece_prob1"] = a_piece_prob1.iloc[piece_index][begin_index: end_index]
+            x.loc["a_piece_prob2"] = a_piece_prob2.iloc[piece_index][begin_index: end_index]
+            x.loc["a_piece_prob3"] = a_piece_prob3.iloc[piece_index][begin_index: end_index]
+            x.loc["a_piece_prob5"] = a_piece_prob5.iloc[piece_index][begin_index: end_index]
+            x.loc["a_piece_prob_ema1"] = a_piece_prob_ema1.iloc[piece_index][begin_index: end_index]
+            x.loc["a_piece_prob_ema2"] = a_piece_prob_ema2.iloc[piece_index][begin_index: end_index]
+            x.loc["a_piece_prob_ema3"] = a_piece_prob_ema3.iloc[piece_index][begin_index: end_index]
+            x.loc["a_piece_prob_ema5"] = a_piece_prob_ema5.iloc[piece_index][begin_index: end_index]
+            # x.loc["a_piece_prob_ema_speed1"] = a_piece_prob_ema_speed1.iloc[piece_index][begin_index: end_index]
+            # x.loc["a_piece_prob_ema_speed2"] = a_piece_prob_ema_speed2.iloc[piece_index][begin_index: end_index]
+            # x.loc["a_piece_prob_ema_speed3"] = a_piece_prob_ema_speed3.iloc[piece_index][begin_index: end_index]
+            # x.loc["a_piece_prob_ema_speed5"] = a_piece_prob_ema_speed5.iloc[piece_index][begin_index: end_index]
+
+            parity = common.parity(a_index) - 1
+            x.loc["a_parity_count1"] = a_parity_count1.iloc[parity][begin_index: end_index]
+            x.loc["a_parity_count2"] = a_parity_count2.iloc[parity][begin_index: end_index]
+            x.loc["a_parity_count3"] = a_parity_count3.iloc[parity][begin_index: end_index]
+            x.loc["a_parity_count5"] = a_parity_count5.iloc[parity][begin_index: end_index]
+            x.loc["a_parity_prob1"] = a_parity_prob1.iloc[parity][begin_index: end_index]
+            x.loc["a_parity_prob2"] = a_parity_prob2.iloc[parity][begin_index: end_index]
+            x.loc["a_parity_prob3"] = a_parity_prob3.iloc[parity][begin_index: end_index]
+            x.loc["a_parity_prob5"] = a_parity_prob5.iloc[parity][begin_index: end_index]
+            x.loc["a_parity_prob_ema1"] = a_parity_prob_ema1.iloc[parity][begin_index: end_index]
+            x.loc["a_parity_prob_ema2"] = a_parity_prob_ema2.iloc[parity][begin_index: end_index]
+            x.loc["a_parity_prob_ema3"] = a_parity_prob_ema3.iloc[parity][begin_index: end_index]
+            x.loc["a_parity_prob_ema5"] = a_parity_prob_ema5.iloc[parity][begin_index: end_index]
+            # x.loc["a_parity_prob_ema_speed1"] = a_parity_prob_ema_speed1.iloc[parity][begin_index: end_index]
+            # x.loc["a_parity_prob_ema_speed2"] = a_parity_prob_ema_speed2.iloc[parity][begin_index: end_index]
+            # x.loc["a_parity_prob_ema_speed3"] = a_parity_prob_ema_speed3.iloc[parity][begin_index: end_index]
+            # x.loc["a_parity_prob_ema_speed5"] = a_parity_prob_ema_speed5.iloc[parity][begin_index: end_index]
 
         x[:][np.isinf(x[:])] = 10000
         x[:][np.isneginf(x[:])] = -10000
+        x[:][np.isnan(x[:])] = 0
         x = x.fillna(0)
 
         return x.T, y.T
