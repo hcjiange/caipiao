@@ -20,7 +20,7 @@ class Service(object):
 
     # 初始化获取数据
     def __init__(self):
-        self.data = common.read_json("./data/data.json")
+        self.data = common.read_json(os.path.dirname(os.path.realpath(__file__)) + "/data/data.json")
 
     def init(self, m: int, step: int, n: int, draw: bool, dot_count: int):
         self.m = m
@@ -50,8 +50,8 @@ class Service(object):
         data = self.data
         if is_from_file:
             # 从文件里读取数据
-            b_single_count = pd.read_csv("./data/" + str(self.m) + "_" + str(self.step) + "/b_single_count.csv").iloc[:, 1:]
-            a_single_count = pd.read_csv("./data/" + str(self.m) + "_" + str(self.step) + "/a_single_count.csv").iloc[:, 1:]
+            b_single_count = pd.read_csv(os.path.dirname(os.path.realpath(__file__)) + "/data/" + str(self.m) + "_" + str(self.step) + "/b_single_count.csv").iloc[:, 1:]
+            a_single_count = pd.read_csv(os.path.dirname(os.path.realpath(__file__)) + "/data/" + str(self.m) + "_" + str(self.step) + "/a_single_count.csv").iloc[:, 1:]
         else:
             b_single_count = pd.DataFrame([])
             a_single_count = pd.DataFrame([])
@@ -66,10 +66,10 @@ class Service(object):
                         a_single_count.loc[i0, item['lotteryDrawNum']] = a_single_counts[self.after[i0]]
 
             # 存储数据
-            if not os.path.exists(os.path.dirname("./data/" + str(self.m) + "_" + str(self.step) + "/")):
-                os.makedirs(os.path.dirname("./data/" + str(self.m) + "_" + str(self.step) + "/"), mode=7777)
-            b_single_count.to_csv("./data/" + str(self.m) + "_" + str(self.step) + "/b_single_count.csv")
-            a_single_count.to_csv("./data/" + str(self.m) + "_" + str(self.step) + "/a_single_count.csv")
+            if not os.path.exists(os.path.dirname(os.path.dirname(os.path.realpath(__file__)) + "/data/" + str(self.m) + "_" + str(self.step) + "/")):
+                os.makedirs(os.path.dirname(os.path.dirname(os.path.realpath(__file__)) + "/data/" + str(self.m) + "_" + str(self.step) + "/"), mode=7777)
+            b_single_count.to_csv(os.path.dirname(os.path.realpath(__file__)) + "/data/" + str(self.m) + "_" + str(self.step) + "/b_single_count.csv")
+            a_single_count.to_csv(os.path.dirname(os.path.realpath(__file__)) + "/data/" + str(self.m) + "_" + str(self.step) + "/a_single_count.csv")
         return b_single_count, a_single_count
 
     # 获取单号码出现比率 pass
@@ -78,14 +78,14 @@ class Service(object):
 
         if is_from_file:
             # 从文件里读取数据
-            b_single_prob = pd.read_csv("./data/" + str(self.m) + "_" + str(self.step) + "/b_single_prob.csv").iloc[:, 1:]
-            a_single_prob = pd.read_csv("./data/" + str(self.m) + "_" + str(self.step) + "/a_single_prob.csv").iloc[:, 1:]
+            b_single_prob = pd.read_csv(os.path.dirname(os.path.realpath(__file__)) + "/data/" + str(self.m) + "_" + str(self.step) + "/b_single_prob.csv").iloc[:, 1:]
+            a_single_prob = pd.read_csv(os.path.dirname(os.path.realpath(__file__)) + "/data/" + str(self.m) + "_" + str(self.step) + "/a_single_prob.csv").iloc[:, 1:]
         else:
             # 计算单号码出现比率
             b_single_prob = b_single_count / (self.m * 5)
             a_single_prob = a_single_count / (self.m * 2)
-            b_single_prob.to_csv("./data/" + str(self.m) + "_" + str(self.step) + "/b_single_prob.csv")
-            a_single_prob.to_csv("./data/" + str(self.m) + "_" + str(self.step) + "/a_single_prob.csv")
+            b_single_prob.to_csv(os.path.dirname(os.path.realpath(__file__)) + "/data/" + str(self.m) + "_" + str(self.step) + "/b_single_prob.csv")
+            a_single_prob.to_csv(os.path.dirname(os.path.realpath(__file__)) + "/data/" + str(self.m) + "_" + str(self.step) + "/a_single_prob.csv")
         return b_single_prob, a_single_prob
 
     # 获取单号码出现比率移动均线 pass
@@ -94,14 +94,14 @@ class Service(object):
 
         if is_from_file:
             # 从文件里读取数据
-            b_single_prob_ema = pd.read_csv("./data/" + str(self.m) + "_" + str(self.step) + "/b_single_prob_ema.csv").iloc[:, 1:]
-            a_single_prob_ema = pd.read_csv("./data/" + str(self.m) + "_" + str(self.step) + "/a_single_prob_ema.csv").iloc[:, 1:]
+            b_single_prob_ema = pd.read_csv(os.path.dirname(os.path.realpath(__file__)) + "/data/" + str(self.m) + "_" + str(self.step) + "/b_single_prob_ema.csv").iloc[:, 1:]
+            a_single_prob_ema = pd.read_csv(os.path.dirname(os.path.realpath(__file__)) + "/data/" + str(self.m) + "_" + str(self.step) + "/a_single_prob_ema.csv").iloc[:, 1:]
         else:
             # 计算单号码出现比率
             b_single_prob_ema = b_single_prob.T.loc[:].apply(lambda x: x.rolling(window=self.n).mean()).T
             a_single_prob_ema = a_single_prob.T.loc[:].apply(lambda x: x.rolling(window=self.n).mean()).T
-            b_single_prob_ema.to_csv("./data/" + str(self.m) + "_" + str(self.step) + "/b_single_prob_ema.csv")
-            a_single_prob_ema.to_csv("./data/" + str(self.m) + "_" + str(self.step) + "/a_single_prob_ema.csv")
+            b_single_prob_ema.to_csv(os.path.dirname(os.path.realpath(__file__)) + "/data/" + str(self.m) + "_" + str(self.step) + "/b_single_prob_ema.csv")
+            a_single_prob_ema.to_csv(os.path.dirname(os.path.realpath(__file__)) + "/data/" + str(self.m) + "_" + str(self.step) + "/a_single_prob_ema.csv")
         return b_single_prob_ema, a_single_prob_ema
 
     # 获取单号码出现比率移动均线速率 pass
@@ -110,14 +110,14 @@ class Service(object):
         b_single_prob_ema, a_single_prob_ema = self.get_single_prob_ema()
         if is_from_file:
             # 从文件里读取数据
-            b_single_prob_ema_speed = pd.read_csv("./data/" + str(self.m) + "_" + str(self.step) + "/b_single_prob_ema_speed.csv").iloc[:, 1:]
-            a_single_prob_ema_speed = pd.read_csv("./data/" + str(self.m) + "_" + str(self.step) + "/a_single_prob_ema_speed.csv").iloc[:, 1:]
+            b_single_prob_ema_speed = pd.read_csv(os.path.dirname(os.path.realpath(__file__)) + "/data/" + str(self.m) + "_" + str(self.step) + "/b_single_prob_ema_speed.csv").iloc[:, 1:]
+            a_single_prob_ema_speed = pd.read_csv(os.path.dirname(os.path.realpath(__file__)) + "/data/" + str(self.m) + "_" + str(self.step) + "/a_single_prob_ema_speed.csv").iloc[:, 1:]
         else:
             # 计算单号码出现比率
             b_single_prob_ema_speed = b_single_prob_ema.T.loc[:].pct_change(periods=1, fill_method="pad").T
             a_single_prob_ema_speed = a_single_prob_ema.T.loc[:].pct_change(periods=1, fill_method="pad").T
-            b_single_prob_ema_speed.to_csv("./data/" + str(self.m) + "_" + str(self.step) + "/b_single_prob_ema_speed.csv")
-            a_single_prob_ema_speed.to_csv("./data/" + str(self.m) + "_" + str(self.step) + "/a_single_prob_ema_speed.csv")
+            b_single_prob_ema_speed.to_csv(os.path.dirname(os.path.realpath(__file__)) + "/data/" + str(self.m) + "_" + str(self.step) + "/b_single_prob_ema_speed.csv")
+            a_single_prob_ema_speed.to_csv(os.path.dirname(os.path.realpath(__file__)) + "/data/" + str(self.m) + "_" + str(self.step) + "/a_single_prob_ema_speed.csv")
         return b_single_prob_ema_speed, a_single_prob_ema_speed
 
     # 绘制单号曲线 pass
@@ -177,10 +177,10 @@ class Service(object):
 
         if is_from_file:
             # 从文件里读取数据
-            b_piece_count = pd.read_csv("./data/" + str(self.m) + "_" + str(self.step) + "/b_piece_count.csv").iloc[:, 1:]
-            a_piece_count = pd.read_csv("./data/" + str(self.m) + "_" + str(self.step) + "/a_piece_count.csv").iloc[:, 1:]
-            b_index = pd.read_csv("./data/" + str(self.m) + "_" + str(self.step) + "/b_piece_index.csv").iloc[:, 1:]
-            a_index = pd.read_csv("./data/" + str(self.m) + "_" + str(self.step) + "/a_piece_index.csv").iloc[:, 1:]
+            b_piece_count = pd.read_csv(os.path.dirname(os.path.realpath(__file__)) + "/data/" + str(self.m) + "_" + str(self.step) + "/b_piece_count.csv").iloc[:, 1:]
+            a_piece_count = pd.read_csv(os.path.dirname(os.path.realpath(__file__)) + "/data/" + str(self.m) + "_" + str(self.step) + "/a_piece_count.csv").iloc[:, 1:]
+            b_index = pd.read_csv(os.path.dirname(os.path.realpath(__file__)) + "/data/" + str(self.m) + "_" + str(self.step) + "/b_piece_index.csv").iloc[:, 1:]
+            a_index = pd.read_csv(os.path.dirname(os.path.realpath(__file__)) + "/data/" + str(self.m) + "_" + str(self.step) + "/a_piece_index.csv").iloc[:, 1:]
         else:
             b_single_count, a_single_count = self.get_single_count()
             b_piece_count = pd.DataFrame({0: b_single_count.loc[0]}, b_single_count.loc[0].index).T
@@ -220,13 +220,13 @@ class Service(object):
                     a_piece_count.loc[piece_index] = a_single_count.loc[i][1:]
 
             b_piece_count.to_csv(
-                "./data/" + str(self.m) + "_" + str(self.step) + "/b_piece_count.csv")
+                os.path.dirname(os.path.realpath(__file__)) + "/data/" + str(self.m) + "_" + str(self.step) + "/b_piece_count.csv")
             a_piece_count.to_csv(
-                "./data/" + str(self.m) + "_" + str(self.step) + "/a_piece_count.csv")
+                os.path.dirname(os.path.realpath(__file__)) + "/data/" + str(self.m) + "_" + str(self.step) + "/a_piece_count.csv")
             pd.DataFrame(b_index).to_csv(
-                "./data/" + str(self.m) + "_" + str(self.step) + "/b_piece_index.csv")
+                os.path.dirname(os.path.realpath(__file__)) + "/data/" + str(self.m) + "_" + str(self.step) + "/b_piece_index.csv")
             pd.DataFrame(a_index).to_csv(
-                "./data/" + str(self.m) + "_" + str(self.step) + "/a_piece_index.csv")
+                os.path.dirname(os.path.realpath(__file__)) + "/data/" + str(self.m) + "_" + str(self.step) + "/a_piece_index.csv")
 
         return b_piece_count, a_piece_count, pd.DataFrame(b_index), pd.DataFrame(a_index)
 
@@ -236,14 +236,14 @@ class Service(object):
 
         if is_from_file:
             # 从文件里读取数据
-            b_piece_prob = pd.read_csv("./data/" + str(self.m) + "_" + str(self.step) + "/b_piece_prob.csv").iloc[:, 1:]
-            a_piece_prob = pd.read_csv("./data/" + str(self.m) + "_" + str(self.step) + "/a_piece_prob.csv").iloc[:, 1:]
+            b_piece_prob = pd.read_csv(os.path.dirname(os.path.realpath(__file__)) + "/data/" + str(self.m) + "_" + str(self.step) + "/b_piece_prob.csv").iloc[:, 1:]
+            a_piece_prob = pd.read_csv(os.path.dirname(os.path.realpath(__file__)) + "/data/" + str(self.m) + "_" + str(self.step) + "/a_piece_prob.csv").iloc[:, 1:]
         else:
             # 计算单号码出现比率
             b_piece_prob = b_piece_count / (self.m * 5 * b_n)
             a_piece_prob = a_piece_count / (self.m * 2 * a_n)
-            b_piece_prob.to_csv("./data/" + str(self.m) + "_" + str(self.step) + "/b_piece_prob.csv")
-            a_piece_prob.to_csv("./data/" + str(self.m) + "_" + str(self.step) + "/a_piece_prob.csv")
+            b_piece_prob.to_csv(os.path.dirname(os.path.realpath(__file__)) + "/data/" + str(self.m) + "_" + str(self.step) + "/b_piece_prob.csv")
+            a_piece_prob.to_csv(os.path.dirname(os.path.realpath(__file__)) + "/data/" + str(self.m) + "_" + str(self.step) + "/a_piece_prob.csv")
         return b_piece_prob, a_piece_prob
 
     # 获取区块出现比率移动均线 pass
@@ -252,14 +252,14 @@ class Service(object):
 
         if is_from_file:
             # 从文件里读取数据
-            b_piece_prob_ema = pd.read_csv("./data/" + str(self.m) + "_" + str(self.step) + "/b_piece_prob_ema.csv").iloc[:, 1:]
-            a_piece_prob_ema = pd.read_csv("./data/" + str(self.m) + "_" + str(self.step) + "/a_piece_prob_ema.csv").iloc[:, 1:]
+            b_piece_prob_ema = pd.read_csv(os.path.dirname(os.path.realpath(__file__)) + "/data/" + str(self.m) + "_" + str(self.step) + "/b_piece_prob_ema.csv").iloc[:, 1:]
+            a_piece_prob_ema = pd.read_csv(os.path.dirname(os.path.realpath(__file__)) + "/data/" + str(self.m) + "_" + str(self.step) + "/a_piece_prob_ema.csv").iloc[:, 1:]
         else:
             # 计算单号码出现比率
             b_piece_prob_ema = b_piece_prob.T.loc[:].apply(lambda x: x.rolling(window=self.n).mean()).T
             a_piece_prob_ema = a_piece_prob.T.loc[:].apply(lambda x: x.rolling(window=self.n).mean()).T
-            b_piece_prob_ema.to_csv("./data/" + str(self.m) + "_" + str(self.step) + "/b_piece_prob_ema.csv")
-            a_piece_prob_ema.to_csv("./data/" + str(self.m) + "_" + str(self.step) + "/a_piece_prob_ema.csv")
+            b_piece_prob_ema.to_csv(os.path.dirname(os.path.realpath(__file__)) + "/data/" + str(self.m) + "_" + str(self.step) + "/b_piece_prob_ema.csv")
+            a_piece_prob_ema.to_csv(os.path.dirname(os.path.realpath(__file__)) + "/data/" + str(self.m) + "_" + str(self.step) + "/a_piece_prob_ema.csv")
         return b_piece_prob_ema, a_piece_prob_ema
 
     # 获取区块出现比率移动均线速率 pass
@@ -268,14 +268,14 @@ class Service(object):
         b_piece_prob_ema, a_piece_prob_ema = self.get_piece_prob_ema()
         if is_from_file:
             # 从文件里读取数据
-            b_piece_prob_ema_speed = pd.read_csv("./data/" + str(self.m) + "_" + str(self.step) + "/b_piece_prob_ema_speed.csv").iloc[:, 1:]
-            a_piece_prob_ema_speed = pd.read_csv("./data/" + str(self.m) + "_" + str(self.step) + "/a_piece_prob_ema_speed.csv").iloc[:, 1:]
+            b_piece_prob_ema_speed = pd.read_csv(os.path.dirname(os.path.realpath(__file__)) + "/data/" + str(self.m) + "_" + str(self.step) + "/b_piece_prob_ema_speed.csv").iloc[:, 1:]
+            a_piece_prob_ema_speed = pd.read_csv(os.path.dirname(os.path.realpath(__file__)) + "/data/" + str(self.m) + "_" + str(self.step) + "/a_piece_prob_ema_speed.csv").iloc[:, 1:]
         else:
             # 计算单号码出现比率
             b_piece_prob_ema_speed = b_piece_prob_ema.T.loc[:].pct_change(periods=1, fill_method="pad").T
             a_piece_prob_ema_speed = a_piece_prob_ema.T.loc[:].pct_change(periods=1, fill_method="pad").T
-            b_piece_prob_ema_speed.to_csv("./data/" + str(self.m) + "_" + str(self.step) + "/b_piece_prob_ema_speed.csv")
-            a_piece_prob_ema_speed.to_csv("./data/" + str(self.m) + "_" + str(self.step) + "/a_piece_prob_ema_speed.csv")
+            b_piece_prob_ema_speed.to_csv(os.path.dirname(os.path.realpath(__file__)) + "/data/" + str(self.m) + "_" + str(self.step) + "/b_piece_prob_ema_speed.csv")
+            a_piece_prob_ema_speed.to_csv(os.path.dirname(os.path.realpath(__file__)) + "/data/" + str(self.m) + "_" + str(self.step) + "/a_piece_prob_ema_speed.csv")
         return b_piece_prob_ema_speed, a_piece_prob_ema_speed
 
     # 绘制单号曲线 pass
@@ -335,8 +335,8 @@ class Service(object):
 
         if is_from_file:
             # 从文件里读取数据
-            b_parity_count = pd.read_csv("./data/" + str(self.m) + "_" + str(self.step) + "/b_parity_count.csv").iloc[:, 1:]
-            a_parity_count = pd.read_csv("./data/" + str(self.m) + "_" + str(self.step) + "/a_parity_count.csv").iloc[:, 1:]
+            b_parity_count = pd.read_csv(os.path.dirname(os.path.realpath(__file__)) + "/data/" + str(self.m) + "_" + str(self.step) + "/b_parity_count.csv").iloc[:, 1:]
+            a_parity_count = pd.read_csv(os.path.dirname(os.path.realpath(__file__)) + "/data/" + str(self.m) + "_" + str(self.step) + "/a_parity_count.csv").iloc[:, 1:]
         else:
             b_single_count, a_single_count = self.get_single_count()
             b_parity_count = pd.DataFrame({1: b_single_count.loc[0], 2: b_single_count.loc[1]}, b_single_count.loc[0].index).T
@@ -357,13 +357,13 @@ class Service(object):
                 a_parity_count.loc[parity] = data_item
 
             b_parity_count.to_csv(
-                "./data/" + str(self.m) + "_" + str(self.step) + "/b_parity_count.csv")
+                os.path.dirname(os.path.realpath(__file__)) + "/data/" + str(self.m) + "_" + str(self.step) + "/b_parity_count.csv")
             a_parity_count.to_csv(
-                "./data/" + str(self.m) + "_" + str(self.step) + "/a_parity_count.csv")
+                os.path.dirname(os.path.realpath(__file__)) + "/data/" + str(self.m) + "_" + str(self.step) + "/a_parity_count.csv")
             pd.DataFrame(b_index).to_csv(
-                "./data/" + str(self.m) + "_" + str(self.step) + "/b_parity_index.csv")
+                os.path.dirname(os.path.realpath(__file__)) + "/data/" + str(self.m) + "_" + str(self.step) + "/b_parity_index.csv")
             pd.DataFrame(a_index).to_csv(
-                "./data/" + str(self.m) + "_" + str(self.step) + "/a_parity_index.csv")
+                os.path.dirname(os.path.realpath(__file__)) + "/data/" + str(self.m) + "_" + str(self.step) + "/a_parity_index.csv")
 
         return b_parity_count, a_parity_count
 
@@ -373,16 +373,16 @@ class Service(object):
 
         if is_from_file:
             # 从文件里读取数据
-            b_parity_prob = pd.read_csv("./data/" + str(self.m) + "_" + str(self.step) + "/b_parity_prob.csv").iloc[:, 1:]
-            a_parity_prob = pd.read_csv("./data/" + str(self.m) + "_" + str(self.step) + "/a_parity_prob.csv").iloc[:, 1:]
+            b_parity_prob = pd.read_csv(os.path.dirname(os.path.realpath(__file__)) + "/data/" + str(self.m) + "_" + str(self.step) + "/b_parity_prob.csv").iloc[:, 1:]
+            a_parity_prob = pd.read_csv(os.path.dirname(os.path.realpath(__file__)) + "/data/" + str(self.m) + "_" + str(self.step) + "/a_parity_prob.csv").iloc[:, 1:]
         else:
             # 计算单号码出现比率
             b_parity_prob = b_parity_count
             b_parity_prob.loc[0] = b_parity_count.loc[0] / (self.m * 5 * 18)
             b_parity_prob.loc[1] = b_parity_count.loc[1] / (self.m * 5 * 17)
             a_parity_prob = a_parity_count / (self.m * 2 * 12)
-            b_parity_prob.to_csv("./data/" + str(self.m) + "_" + str(self.step) + "/b_parity_prob.csv")
-            a_parity_prob.to_csv("./data/" + str(self.m) + "_" + str(self.step) + "/a_parity_prob.csv")
+            b_parity_prob.to_csv(os.path.dirname(os.path.realpath(__file__)) + "/data/" + str(self.m) + "_" + str(self.step) + "/b_parity_prob.csv")
+            a_parity_prob.to_csv(os.path.dirname(os.path.realpath(__file__)) + "/data/" + str(self.m) + "_" + str(self.step) + "/a_parity_prob.csv")
         return b_parity_prob, a_parity_prob
 
     # 获取区块出现比率移动均线 pass
@@ -391,14 +391,14 @@ class Service(object):
 
         if is_from_file:
             # 从文件里读取数据
-            b_parity_prob_ema = pd.read_csv("./data/" + str(self.m) + "_" + str(self.step) + "/b_parity_prob_ema.csv").iloc[:, 1:]
-            a_parity_prob_ema = pd.read_csv("./data/" + str(self.m) + "_" + str(self.step) + "/a_parity_prob_ema.csv").iloc[:, 1:]
+            b_parity_prob_ema = pd.read_csv(os.path.dirname(os.path.realpath(__file__)) + "/data/" + str(self.m) + "_" + str(self.step) + "/b_parity_prob_ema.csv").iloc[:, 1:]
+            a_parity_prob_ema = pd.read_csv(os.path.dirname(os.path.realpath(__file__)) + "/data/" + str(self.m) + "_" + str(self.step) + "/a_parity_prob_ema.csv").iloc[:, 1:]
         else:
             # 计算单号码出现比率
             b_parity_prob_ema = b_parity_prob.T.loc[:].apply(lambda x: x.rolling(window=self.n).mean()).T
             a_parity_prob_ema = a_parity_prob.T.loc[:].apply(lambda x: x.rolling(window=self.n).mean()).T
-            b_parity_prob_ema.to_csv("./data/" + str(self.m) + "_" + str(self.step) + "/b_parity_prob_ema.csv")
-            a_parity_prob_ema.to_csv("./data/" + str(self.m) + "_" + str(self.step) + "/a_parity_prob_ema.csv")
+            b_parity_prob_ema.to_csv(os.path.dirname(os.path.realpath(__file__)) + "/data/" + str(self.m) + "_" + str(self.step) + "/b_parity_prob_ema.csv")
+            a_parity_prob_ema.to_csv(os.path.dirname(os.path.realpath(__file__)) + "/data/" + str(self.m) + "_" + str(self.step) + "/a_parity_prob_ema.csv")
         return b_parity_prob_ema, a_parity_prob_ema
 
     # 获取区块出现比率移动均线速率 pass
@@ -407,14 +407,14 @@ class Service(object):
         b_parity_prob_ema, a_parity_prob_ema = self.get_parity_prob_ema()
         if is_from_file:
             # 从文件里读取数据
-            b_parity_prob_ema_speed = pd.read_csv("./data/" + str(self.m) + "_" + str(self.step) + "/b_parity_prob_ema_speed.csv").iloc[:, 1:]
-            a_parity_prob_ema_speed = pd.read_csv("./data/" + str(self.m) + "_" + str(self.step) + "/a_parity_prob_ema_speed.csv").iloc[:, 1:]
+            b_parity_prob_ema_speed = pd.read_csv(os.path.dirname(os.path.realpath(__file__)) + "/data/" + str(self.m) + "_" + str(self.step) + "/b_parity_prob_ema_speed.csv").iloc[:, 1:]
+            a_parity_prob_ema_speed = pd.read_csv(os.path.dirname(os.path.realpath(__file__)) + "/data/" + str(self.m) + "_" + str(self.step) + "/a_parity_prob_ema_speed.csv").iloc[:, 1:]
         else:
             # 计算单号码出现比率
             b_parity_prob_ema_speed = b_parity_prob_ema.T.loc[:].pct_change(periods=1, fill_method="pad").T
             a_parity_prob_ema_speed = a_parity_prob_ema.T.loc[:].pct_change(periods=1, fill_method="pad").T
-            b_parity_prob_ema_speed.to_csv("./data/" + str(self.m) + "_" + str(self.step) + "/b_parity_prob_ema_speed.csv")
-            a_parity_prob_ema_speed.to_csv("./data/" + str(self.m) + "_" + str(self.step) + "/a_parity_prob_ema_speed.csv")
+            b_parity_prob_ema_speed.to_csv(os.path.dirname(os.path.realpath(__file__)) + "/data/" + str(self.m) + "_" + str(self.step) + "/b_parity_prob_ema_speed.csv")
+            a_parity_prob_ema_speed.to_csv(os.path.dirname(os.path.realpath(__file__)) + "/data/" + str(self.m) + "_" + str(self.step) + "/a_parity_prob_ema_speed.csv")
         return b_parity_prob_ema_speed, a_parity_prob_ema_speed
 
     # 绘制单号曲线 pass
@@ -473,10 +473,10 @@ class Service(object):
 
         if is_from_file:
             # 从文件里读取数据
-            b_y = pd.read_csv("./data/b_y.csv").iloc[:, 1:]
-            a_y = pd.read_csv("./data/a_y.csv").iloc[:, 1:]
+            b_y = pd.read_csv(os.path.dirname(os.path.realpath(__file__)) + "/data/b_y.csv").iloc[:, 1:]
+            a_y = pd.read_csv(os.path.dirname(os.path.realpath(__file__)) + "/data/a_y.csv").iloc[:, 1:]
         else:
-            org_data = common.read_json("./data/data.json")
+            org_data = common.read_json(os.path.dirname(os.path.realpath(__file__)) + "/data/data.json")
             index = pd.DataFrame(org_data).loc[:, "lotteryDrawNum"]
             b_data = pd.DataFrame(org_data, index).loc[:, "lotteryDrawResult"].apply(
                 lambda x: pd.Series(str(x).split(" ")[:-2]).astype('int').to_numpy().tolist())
@@ -522,7 +522,7 @@ class Service(object):
                     else:
                         a_y.loc[index[i], i0] = 0
 
-            b_y.T.to_csv("./data/b_y.csv")
-            a_y.T.to_csv("./data/a_y.csv")
+            b_y.T.to_csv(os.path.dirname(os.path.realpath(__file__)) + "/data/b_y.csv")
+            a_y.T.to_csv(os.path.dirname(os.path.realpath(__file__)) + "/data/a_y.csv")
 
         return b_y, a_y
