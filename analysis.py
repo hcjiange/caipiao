@@ -39,7 +39,7 @@ class Analysis(object):
     # 训练
     def do(self):
 
-        for i in range(29, 35):
+        for i in range(35):
             x, y = self.get_fit_data(i, -1)
             self.to_fit_model(x, y, "b", i + 1)
         for i in range(12):
@@ -116,23 +116,25 @@ class Analysis(object):
 
     # 预测
     def to_predit(self, before):
+        num = 23086
+        n = 1
+        for j in range(5):
+            print(str(num - (j * n)))
+            for i in range(35):
+                x, y = self.get_fit_data(i, -1, str(num-10), str(num-1))
+                with open("./data/model/b_" + str(i + 1) + ".pkl", 'rb') as f:
+                    model = pickle.load(f)
+                    y_pred = model.predict([x.T[str(num - (j * n)-1)]])
+                    if y_pred[0] > 0:
+                        print(str(i + 1), " ", y_pred[0])
 
-        for i in range(35):
-            x, y = self.get_fit_data(i, -1, "23070", "23080")
-            with open("./data/model/b_" + str(i + 1) + ".pkl", 'rb') as f:
-                model = pickle.load(f)
-                y_pred = model.predict([x.T["23077"], x.T["23078"], x.T["23079"], x.T["23080"]])
-                if y_pred[0] > 0:
-                    print(str(i + 1), " ", y_pred[0])
-
-        for i in range(12):
-            x, y = self.get_fit_data(-1, i, "23070", "23080")
-            with open("./data/model/a_" + str(i + 1) + ".pkl", 'rb') as f:
-                model = pickle.load(f)
-                y_pred = model.predict([x.T["23077"], x.T["23078"], x.T["23079"], x.T["23080"]])
-                print(str(i + 1), " ", item)
-                for item in y_pred:
-                    print(str(i + 1), " ", item)
+            for i in range(12):
+                x, y = self.get_fit_data(-1, i, str(num-10), str(num-1))
+                with open("./data/model/a_" + str(i + 1) + ".pkl", 'rb') as f:
+                    model = pickle.load(f)
+                    y_pred = model.predict([x.T[str(num - (j * n)-1)]])
+                    if y_pred[0] > 0:
+                        print(str(i + 1), " ", y_pred[0])
 
         return
 

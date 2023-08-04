@@ -6,7 +6,7 @@
       "user": "root",
       "password": "root",
       "db": "caipiao",
-      "charset": "utf8mb4"
+      "charset": "utf8"
     }
   },
   "cache": "file"
